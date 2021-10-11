@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { TouchableOpacity, StyleSheet, Text, View, TextInput } from 'react-native';
+import { TouchableOpacity, StyleSheet, Text, View, TextInput, Alert } from 'react-native';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -11,10 +11,19 @@ export default function SettingsScreen({ route, navigation }) {
         save_api_key(apiKey)
     }
 
+    const clearKey = () => {
+        remove_api_key()
+    }
+
     const save_api_key = async (value) => {
         try {
             console.log('saving api_key = ' + value)
             await AsyncStorage.setItem('@api_key', value)
+            Alert.alert(
+                "Success",
+                "API Key has been saved.",
+                [{ text: "OK" }]
+            );
         } catch (e) {
             // saving error  
         }
@@ -35,7 +44,14 @@ export default function SettingsScreen({ route, navigation }) {
 
     const remove_api_key = async () => {
         try {
+            setRealApiKey('')
+            setApiKey('')
             await AsyncStorage.removeItem('@api_key')
+            Alert.alert(
+                "Success",
+                "API Key has been cleared.",
+                [{ text: "OK" }]
+            );
         } catch (e) {
             // remove error
         }
@@ -60,39 +76,56 @@ export default function SettingsScreen({ route, navigation }) {
             <TouchableOpacity style={styles.button} onPress={saveValue}>
                 <Text style={styles.buttonText}>Save</Text>
             </TouchableOpacity>
+
+            <TouchableOpacity style={styles.cancelButton} onPress={clearKey}>
+                <Text style={styles.buttonText}>Clear</Text>
+            </TouchableOpacity>
         </View>
     );
 };
 
 const styles = StyleSheet.create({
     container: {
-      flex: 1,
-      backgroundColor: '#fff',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: 50,
-      maxWidth: 400,
+        flex: 1,
+        backgroundColor: '#fff',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 50,
+        maxWidth: 400,
     },
     apiLabel: {
-      fontWeight: '700',
+        fontWeight: '700',
+        fontSize: 18,
     },
-    apiInput: { 
-      height: 40, 
-      borderColor: 'gray', 
-      borderWidth: 1, 
-      marginTop: 10, 
-      paddingHorizontal: 10, 
+    apiInput: {
+        height: 40,
+        maxWidth: 300,
+        width: 300,
+        borderColor: 'gray',
+        borderWidth: 1,
+        marginTop: 20,
+        paddingHorizontal: 10,
+        borderRadius: 15,
     },
     button: {
-      backgroundColor: '#0000ff',
-      padding: 8,
-      marginTop: 20,
-      borderRadius: 15,
-      height: 40,
+        backgroundColor: '#0000ff',
+        padding: 8,
+        marginTop: 20,
+        borderRadius: 15,
+        height: 40,
+        width: 300,
+    },
+    cancelButton: {
+        backgroundColor: '#ccc',
+        padding: 8,
+        marginTop: 20,
+        borderRadius: 15,
+        height: 40,
+        width: 300,
     },
     buttonText: {
-      color: '#fff',
-      textAlign: 'center',
-      fontWeight: '700',
+        color: '#fff',
+        textAlign: 'center',
+        fontWeight: '700',
     }
-  });
+});

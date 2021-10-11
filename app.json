@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Prohashing_monitor",
+    "name": "Prohashing Monitor",
     "slug": "Prohashing_monitor",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -21,9 +21,10 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#FFFFFF"
-      }
+      },
+      "package": "com.tylerroland.Prohashing_monitor"
     },
     "web": {
       "favicon": "./assets/favicon.png"
