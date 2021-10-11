@@ -3,14 +3,11 @@ import { StyleSheet } from 'react-native';
 
 import Navigation from './navigation';
 
-function App() {
+export default function App() {
   return (
     <Navigation />
   );
 }
-
-export default App;
-
 
 const styles = StyleSheet.create({
   container: {
