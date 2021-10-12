@@ -33,8 +33,7 @@ export default function SettingsScreen({ route, navigation }) {
         try {
             const value = await AsyncStorage.getItem('@api_key')
             if (value !== null) {
-                // value previously stored   
-                console.log('loading key = ' + value)
+                // value previously stored
                 setRealApiKey(value)
             }
         } catch (e) {
@@ -69,8 +68,8 @@ export default function SettingsScreen({ route, navigation }) {
     }, [])
 
     return (
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-            <Text style={styles.apiLabel}>Enter your API key here.</Text>
+        <View style={styles.container}>
+            <Text style={styles.apiLabel}>Enter your Prohashing API key here.</Text>
             <TextInput style={styles.apiInput} onChangeText={text => updateApiKey(text)} value={api_key} />
 
             <TouchableOpacity style={styles.button} onPress={saveValue}>
@@ -87,15 +86,16 @@ export default function SettingsScreen({ route, navigation }) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: '#ddd',
         alignItems: 'center',
         justifyContent: 'center',
         padding: 50,
-        maxWidth: 400,
+        width: '100%',
     },
     apiLabel: {
         fontWeight: '700',
         fontSize: 18,
+        textAlign: 'center',
     },
     apiInput: {
         height: 40,
@@ -106,6 +106,10 @@ const styles = StyleSheet.create({
         marginTop: 20,
         paddingHorizontal: 10,
         borderRadius: 15,
+        backgroundColor: '#fff',
+        borderColor: 'transparent',
+        elevation: 3,
+
     },
     button: {
         backgroundColor: '#0000ff',
@@ -116,7 +120,7 @@ const styles = StyleSheet.create({
         width: 300,
     },
     cancelButton: {
-        backgroundColor: '#ccc',
+        backgroundColor: '#aaa',
         padding: 8,
         marginTop: 20,
         borderRadius: 15,

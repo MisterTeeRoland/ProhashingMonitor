@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Text, View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { Text, View, StyleSheet, ScrollView, TouchableOpacity, Modal, Image } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import WorkersCard from '../components/WorkersCard';
@@ -8,6 +8,15 @@ export default function WorkersScreen() {
 
     let api_key;
     const [comp, setComp] = useState(null);
+    const [modalVisible, setModalVisible] = useState(false);
+
+    const [modalTitle, setModalTitle] = useState('');
+    const [modalAlgorithm, setModalAlgorithm] = useState('');
+    const [modalCoin, setModalCoin] = useState('');
+    const [modalHash, setModalHash] = useState(0);
+    const [modalMinRestart, setModalMinRestart] = useState(0);
+    const [modalDifficulty, setModalDifficulty] = useState(0);
+    const [modalRestartPenalty, setModalRestartPenalty] = useState(0);
 
     const load_api_key = async () => {
         try {
@@ -37,16 +46,58 @@ export default function WorkersScreen() {
         }
     }
 
+    const convert_hashes = (hash_rate) => {
+        let arr = ['', 'H/s', 'kH/s', 'MH/s', 'GH/s', 'TH/s', 'PH/s', 'EH/s', 'ZH/s'];
+        let i = 0, thresh = 1, diff = 0;
+        while (true) {
+            if ((hash_rate / thresh) > 1) {
+                diff = (hash_rate / thresh).toFixed(2);
+                i++;
+                thresh *= 1000;
+            }
+            else {
+                break;
+            }
+        }
+        return diff + " " + arr[i];
+    }
+
     const renderWorkers = (miners) => {
         if (miners.length == 0) {
-            return (<Text>No workers running.</Text>)
+            return (<Text style={{ fontSize: 18, fontWeight: '700', textAlign: 'center' }}>No workers running.</Text>)
         }
 
         return (
             miners.map((item, index) => (
-                <WorkersCard key={index} item={item} />
+                <WorkersCard key={index} item={item} onOpenModal={() => loadItemToModal(item)} />
             ))
         )
+    }
+
+    const loadItemToModal = (item) => {
+
+        setModalTitle(item.ID);
+        setModalAlgorithm(item.algo);
+        setModalCoin(item.coin);
+        setModalHash(convert_hashes(item.accepted))
+        setModalMinRestart(item.minRestartDelay.toFixed(3))
+        setModalDifficulty(item.difficulty);
+        setModalRestartPenalty(item.workRestartPenalty);
+
+        setModalVisible(true);
+    }
+
+    const clearModal = () => {
+
+        setModalTitle('');
+        setModalAlgorithm('');
+        setModalCoin('');
+        setModalHash(0);
+        setModalMinRestart(0)
+        setModalDifficulty(0);
+        setModalRestartPenalty(0);
+
+        setModalVisible(false);
     }
 
     async function run() {
@@ -60,12 +111,36 @@ export default function WorkersScreen() {
 
     return (
         <View style={styles.workersContainer}>
+
+            <View style={styles.topContainer}>
+                <TouchableOpacity style={styles.button} onPress={run}>
+                    <Text style={styles.buttonText}>Update</Text>
+                </TouchableOpacity>
+            </View>
+
+
             <ScrollView style={styles.workersList}>
                 <View>{comp}</View>
             </ScrollView>
-            <TouchableOpacity style={styles.button} onPress={run}>
-                <Text style={styles.buttonText}>Run Again</Text>
-            </TouchableOpacity>
+
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={modalVisible}
+                onRequestClose={() => { clearModal(); }}
+                style={styles.bottomModal}
+            >
+                <View style={styles.modalBody}>
+                    <Text style={styles.modalTitle}>{modalTitle}</Text>
+                    <Text>Algorithm: {modalAlgorithm}</Text>
+                    <Text>Current Coin: {modalCoin}</Text>
+                    <Text>Hashrate: {modalHash}</Text>
+                    <Text>Difficulty: {modalDifficulty}</Text>
+                    <Text>minRestartDelay: {modalMinRestart} seconds</Text>
+                    <Text>Work Restart Penalty: {modalRestartPenalty}</Text>
+                </View>
+            </Modal>
+
         </View>
     );
 }
@@ -74,11 +149,16 @@ const styles = StyleSheet.create({
     workersContainer: {
         display: 'flex',
         flex: 1,
-        width: 400,
+        width: '100%',
+    },
+    topContainer: {
+        backgroundColor: '#fff',
+        elevation: 10,
+        paddingTop: 30,
     },
     workersList: {
-        marginTop: 50,
-        marginHorizontal: 50,
+        paddingTop: 20,
+        backgroundColor: '#ddd'
     },
     errorText: {
         color: 'red',
@@ -87,14 +167,47 @@ const styles = StyleSheet.create({
     button: {
         backgroundColor: 'blue',
         padding: 10,
-        marginVertical: 20,
-        width: 300,
-        marginHorizontal: 50,
+        marginVertical: 10,
+        borderRadius: 15,
+        width: '90%',
+        marginHorizontal: '5%',
     },
     buttonText: {
         color: 'white',
         fontSize: 16,
         fontWeight: '700',
         textAlign: 'center',
+    },
+    bottomModal: {
+    },
+    modalBody: {
+        backgroundColor: '#fff',
+        paddingTop: 22,
+        paddingHorizontal: 22,
+        borderRadius: 4,
+        borderColor: 'rgba(0, 0, 0, 0.1)',
+        maxHeight: 600,
+        minHeight: 500,
+        height: 'auto',
+        position: 'absolute',
+        bottom: -15,
+        width: '100%',
+        borderRadius: 15,
+        elevation: 10,
+    },
+    modalImage: {
+        width: 60,
+        height: 60,
+        marginHorizontal: 'auto',
+        marginTop: 4,
+        alignContent: 'center',
+        justifyContent: 'center'
+    },
+    modalTitle: {
+        fontSize: 24,
+        fontWeight: '700',
+        textAlign: 'center',
+        marginTop: 15,
+        marginBottom: 40,
     }
 })
