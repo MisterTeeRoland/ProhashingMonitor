@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Text, View, StyleSheet, TouchableOpacity, ScrollView, Modal, Alert, Image } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { api_key } from './Settings';
 
+import { coinList } from '../assets/coinlist';
 import EarningsCard from '../components/EarningsCard';
 
 export default function EarningsScreen() {
@@ -85,8 +85,19 @@ export default function EarningsScreen() {
             return (<Text>No outstanding balances.</Text>)
         }
 
+        var sortable = [];
+
+        for (var coin in balances) {
+            sortable.push([coin, balances[coin]]);
+        }
+
+        //for now, sort by coin balance
+        sortable.sort(function(a, b) {
+            return b[1].balance - a[1].balance;
+        });
+
         return (
-            Object.entries(balances).map((item, index) => (
+            sortable.map((item, index) => (
                 <EarningsCard key={index} item={item} threshold={8} onOpenModal={() => loadItemToModal(item)} />
             ))
         )
