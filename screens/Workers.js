@@ -131,14 +131,54 @@ export default function WorkersScreen() {
                 style={styles.bottomModal}
             >
                 <View style={styles.modalBody}>
-                    <Text style={styles.modalTitle}>{modalTitle}</Text>
-                    <Text>Algorithm: {modalAlgorithm}</Text>
-                    <Text>Current Coin: {modalCoin}</Text>
-                    <Text>Hashrate: {modalHash}</Text>
-                    <Text>Difficulty: {modalDifficulty}</Text>
-                    <Text>minRestartDelay: {modalMinRestart} seconds</Text>
-                    <Text>Work Restart Penalty: {modalRestartPenalty}</Text>
+                    <View style={{ flexGrow: 1, }}>
+                        <Text style={styles.modalTitle}>{modalTitle}</Text>
+
+                        <View style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between'}}>
+                            <View style={styles.workerInfoDiv}>
+                                <Text style={styles.workerLabel}>ALGORITHM</Text>
+                                <Text style={styles.workerValue}>{modalAlgorithm}</Text>
+                            </View>
+                            
+                            <View style={styles.workerInfoDiv}>
+                                <Text style={styles.workerLabel}>CURRENT COIN</Text> 
+                                <Text style={styles.workerValue}>{modalCoin}</Text>
+                            </View>
+
+                            <View style={styles.workerInfoDiv}>
+                                <Text style={styles.workerLabel}>HASHRATE</Text>
+                                <Text style={styles.workerValue}>{modalHash}</Text>
+                            </View>
+                        </View>
+
+                        <View style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between', marginTop: 20,}}>
+                            <View style={styles.workerInfoDiv}>
+                                <Text style={styles.workerLabel}>DIFFICULTY</Text>
+                                <Text style={styles.workerValue}>{modalDifficulty}</Text>
+                            </View>
+
+                            <View style={styles.workerInfoDiv}>
+                                <Text style={styles.workerLabel}>MIN RESTART DELAY</Text>
+                                <Text style={styles.workerValue}>{modalMinRestart} seconds</Text>
+                            </View>
+
+                            <View></View>
+                        </View>
+
+                        <View style={{marginTop: 20}}>
+                            <View style={styles.workerInfoDiv}>
+                                <Text style={styles.workerLabel}>WORK RESTART PENALTY</Text>
+                                <Text style={styles.workerValue}>{modalRestartPenalty}</Text>
+                            </View>
+                        </View>
+                    </View>
+                    <View style={{ marginBottom: 40, marginTop: 20 }}>
+                        <TouchableOpacity onPress={clearModal} style={{backgroundColor: 'blue', padding: 10, borderRadius: 15,}}>
+                            <Text style={{color: 'white', textAlign: 'center', fontWeight: '700'}}>Close</Text>
+                        </TouchableOpacity>
+                    </View>
                 </View>
+                
             </Modal>
 
         </View>
@@ -187,13 +227,16 @@ const styles = StyleSheet.create({
         borderRadius: 4,
         borderColor: 'rgba(0, 0, 0, 0.1)',
         maxHeight: 600,
-        minHeight: 500,
+        minHeight: 400,
         height: 'auto',
         position: 'absolute',
         bottom: -15,
         width: '100%',
         borderRadius: 15,
         elevation: 10,
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between'
     },
     modalImage: {
         width: 60,
@@ -209,5 +252,15 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         marginTop: 15,
         marginBottom: 40,
+    },
+    workerInfoDiv: {
+        marginBottom: 20,
+    },
+    workerLabel: {
+        fontWeight: '700',
+        fontSize: 12,
+    },
+    workerValue: {
+        fontSize: 18,
     }
 })

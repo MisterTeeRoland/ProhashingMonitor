@@ -133,14 +133,37 @@ export default function EarningsScreen() {
                 style={styles.bottomModal}
             >
                 <View style={styles.modalBody}>
-                    <View style={{flexDirection: 'row', justifyContent: 'center', width: '100%', alignContent: 'center'}}>
-                        <Image style={styles.modalImage} source={{ uri: modalImage }} />
+                    <View style={{flexGrow: 1}}>
+                        <View style={{flexDirection: 'row', justifyContent: 'center', width: '100%', alignContent: 'center'}}>
+                            <Image style={styles.modalImage} source={{ uri: modalImage }} />
+                        </View>
+                        <Text style={styles.modalTitle}>{modalTitle}</Text>
+
+                        <View style={styles.modalInfoDiv}>
+                            <Text style={styles.modalLabel}>CURRENT BALANCE</Text>
+                            <Text style={styles.modalValue}>{modalBalance} {modalAbbv}</Text>
+                        </View>
+
+                        <View style={styles.modalInfoDiv}>
+                            <Text style={styles.modalLabel}>PAID OUT IN LAST 24 HOURS</Text>
+                            <Text style={styles.modalValue}>{modalEarnings24} {modalAbbv}</Text>
+                        </View>
+                        
+                        <View style={styles.modalInfoDiv}>
+                            <Text style={styles.modalLabel}>ELIGIBLE FOR PAYOUT</Text>
+                            <Text style={styles.modalValue}>{modalEligiblePayout} {modalAbbv}</Text>
+                        </View>
+
+                        <View style={styles.modalInfoDiv}>
+                            <Text style={styles.modalLabel}>ON-CHAIN PAYOUT THRESHOLD</Text>
+                            <Text style={styles.modalValue}>{modalThreshold} {modalAbbv}</Text>
+                        </View>
                     </View>
-                    <Text style={styles.modalTitle}>{modalTitle}</Text>
-                    <Text>Current Balance: {modalBalance} {modalAbbv}</Text>
-                    <Text>Paid out in last 24 hours: {modalEarnings24} {modalAbbv}</Text>
-                    <Text>Eligible for payout: {modalEligiblePayout} {modalAbbv}</Text>
-                    <Text>On-chain payout threshold: {modalThreshold} {modalAbbv}</Text>
+                    <View>
+                        <TouchableOpacity onPress={clearModal} style={{backgroundColor: 'blue', borderRadius: 15, marginTop: 10, marginBottom: 40, padding: 10}}>
+                            <Text style={{fontWeight: '700', color: 'white', textAlign: 'center'}}>Close</Text>
+                        </TouchableOpacity>
+                    </View>
                 </View>
             </Modal>
         </View>
@@ -197,6 +220,9 @@ const styles = StyleSheet.create({
         width: '100%',
         borderRadius: 15,
         elevation: 10,
+        display: 'flex', 
+        flexDirection: 'column', 
+        justifyContent: 'space-between'
     },
     modalImage: {
         width: 60,
@@ -212,5 +238,15 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         marginTop: 15,
         marginBottom: 40,
+    },
+    modalInfoDiv: {
+        marginBottom: 20,
+    },
+    modalLabel: {
+        fontWeight: '700',
+        fontSize: 12,
+    },
+    modalValue: {
+        fontSize: 18,
     }
 })
