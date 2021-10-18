@@ -1,54 +1,55 @@
 import React, { useEffect, useState } from 'react';
-import { Text, View, StyleSheet, TouchableOpacity, ScrollView, Modal, Alert, Image } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { RefreshControl, Text, View, StyleSheet, TouchableOpacity, ScrollView, Modal, Alert, Image } from 'react-native';
 
 import { coinList } from '../assets/coinlist';
+import { load_api_key } from '../tools/fetches';
+import InitialStateCard from '../components/InitialStateCard';
 import EarningsCard from '../components/EarningsCard';
+import EarningsModal from '../components/EarningsModal';
 
 export default function EarningsScreen() {
     let api_key;
+    const currency = 'usd';
+    const sortCase = 'value';
+    // const sortCase = 'balance';
+
+    const [initialState, setInitialState] = useState(true);
+
     const [comp, setComp] = useState(null);
+    const [refreshing, setRefreshing] = React.useState(false);
+
+    //modal states
     const [modalVisible, setModalVisible] = useState(false);
+    const [modalObj, setModalObj] = useState({});
 
-    const [modalTitle, setModalTitle] = useState('');
-    const [modalImage, setModalImage] = useState('');
-    const [modalBalance, setModalBalance] = useState(0.00);
-    const [modalAbbv, setModalAbbv] = useState('');
-    const [modalEarnings24, setModalEarnings24] = useState(0.00);
-    const [modalEligiblePayout, setModalEligiblePayout] = useState(0.00);
-    const [modalThreshold, setModalThreshold] = useState(0.00);
 
-    const load_api_key = async () => {
-        try {
-            const value = await AsyncStorage.getItem('@api_key')
-            if (value === null) {
-                console.log("no key loaded")
-            }
-            return value
-        } catch (e) {
-            // error reading value  
-            console.log("error reading value")
-            console.log(e)
-        }
-    }
+
+    const onRefresh = React.useCallback(() => {
+        setRefreshing(true);
+        run().then(() => setRefreshing(false));
+    }, []);
+
+    const threshold = 8;
+
+    
 
     const call_endpoint = async (api_key) => {
         if (!api_key || api_key == undefined) {
             return;
         }
 
-        const req = await fetch(`https://prohashing.com/api/v1/wallet?apiKey=${api_key}`);
-        let res = await req.json();
-        if (res.status == 'success') {
-            setComp(renderBalances(res.data.balances))
-        } else {
-            throw Error('no response');
+        try {
+            const req = await fetch(`https://prohashing.com/api/v1/wallet?apiKey=${api_key}`);
+            let res = await req.json();
+            if (res.status == 'success') {
+                setComp(await renderBalances(res.data.balances))
+                setInitialState(false)
+            } else {
+                throw Error('no response');
+            }
+        } catch (e) {
+            throw Error(e)
         }
-    }
-
-    const runalert = () => {
-        console.log("runtest");
-        Alert.alert('test', 'this was pressed');
     }
 
     const loadItemToModal = (item) => {
@@ -56,31 +57,38 @@ export default function EarningsScreen() {
         const abbv = item[1].abbreviation.toLowerCase();
         const source = `https://cryptoicon-api.vercel.app/api/icon/${abbv}`
 
-        setModalTitle(item[1].name);
-        setModalImage(source);
-        setModalBalance(item[1].balance);
-        setModalAbbv(item[1].abbreviation);
-        setModalEarnings24(item[1].paid24h);
-        setModalEligiblePayout(item[1].unpaid);
-        setModalThreshold(item[1].payoutThreshold);
+        setModalObj({
+            title: item[1].name,
+            image: source,
+            balance: item[1].balance,
+            abbv: item[1].abbreviation,
+            earnings24: item[1].paid24h,
+            eligiblePayout: item[1].unpaid,
+            threshold: item[1].payoutThreshold,
+            earnings: item[1].value,
+        })
         
         setModalVisible(true);
     }
 
-    const clearModal = () => {
+    const clearEarningsModal = () => {
 
-        setModalTitle('');
-        setModalImage('');
-        setModalBalance(0.00);
-        setModalAbbv('');
-        setModalEarnings24(0.00);
-        setModalEligiblePayout(0.00);
-        setModalThreshold(0.00);
+        setModalObj({
+            title: '',
+            image: '',
+            balance: 0.00,
+            abbv: '',
+            earnings24: 0.00,
+            eligiblePayout: 0.00,
+            threshold: 0.00,
+            earnings: 0.00,
+        })
         
         setModalVisible(false);
     }
+    
 
-    const renderBalances = (balances) => {
+    const renderBalances = async (balances) => {
         if (Object.entries(balances).length == 0) {
             return (<Text>No outstanding balances.</Text>)
         }
@@ -88,24 +96,55 @@ export default function EarningsScreen() {
         var sortable = [];
 
         for (var coin in balances) {
+            balances[coin].value = await get_value(balances[coin].abbreviation, balances[coin].balance)
             sortable.push([coin, balances[coin]]);
         }
 
         //for now, sort by coin balance
         sortable.sort(function(a, b) {
-            return b[1].balance - a[1].balance;
+            if (sortCase == "balance") {
+                return b[1].balance - a[1].balance;
+            } else if (sortCase == "value") {
+                return b[1].value - a[1].value;
+            }
         });
 
         return (
             sortable.map((item, index) => (
-                <EarningsCard key={index} item={item} threshold={8} onOpenModal={() => loadItemToModal(item)} />
+                <EarningsCard key={index} item={item} threshold={threshold} onOpenModal={() => loadItemToModal(item)} />
             ))
         )
     }
 
+    const get_value = async (symbol, balance) => {
+
+        let amt = 0;
+        let obj = coinList.find(o => o.symbol === symbol.toLowerCase());
+
+        if (obj) {
+
+            const req = await fetch(`https://api.coingecko.com/api/v3/coins/${obj.id}?tickers=true`);
+            const res = await req.json();
+            
+            if (!res.error && res.market_data && res.market_data.current_price) {
+                let price = res.market_data.current_price[currency];
+                amt = (balance * price)
+                return amt;
+            } else {
+                console.log(res);
+                return amt;
+            }
+        } else {
+            // console.log("no coingecko object for " + symbol);
+            return amt;
+        }
+    }
+
     async function run() {
+        setRefreshing(true)
         api_key = await load_api_key()
         await call_endpoint(api_key)
+        setRefreshing(false)
     }
 
     useEffect(() => {
@@ -115,57 +154,24 @@ export default function EarningsScreen() {
     return (
         <View style={styles.earningsContainer}>
 
-            <View style={styles.topContainer}>
-                <TouchableOpacity style={styles.button} onPress={run}>
-                    <Text style={styles.buttonText}>Update</Text>
-                </TouchableOpacity>
-            </View>
+            <Text style={{paddingTop: 50, paddingBottom: 20, fontSize: 20, fontWeight: '700', textAlign: 'center'}}>Earnings</Text>
 
-            <ScrollView style={styles.earningsList}>
-                <View>{comp}</View>
-            </ScrollView>
-
-            <Modal
-                animationType="slide"
-                transparent={true}
-                visible={modalVisible}
-                onRequestClose={() => { clearModal(); }}
-                style={styles.bottomModal}
-            >
-                <View style={styles.modalBody}>
-                    <View style={{flexGrow: 1}}>
-                        <View style={{flexDirection: 'row', justifyContent: 'center', width: '100%', alignContent: 'center'}}>
-                            <Image style={styles.modalImage} source={{ uri: modalImage }} />
-                        </View>
-                        <Text style={styles.modalTitle}>{modalTitle}</Text>
-
-                        <View style={styles.modalInfoDiv}>
-                            <Text style={styles.modalLabel}>CURRENT BALANCE</Text>
-                            <Text style={styles.modalValue}>{modalBalance} {modalAbbv}</Text>
-                        </View>
-
-                        <View style={styles.modalInfoDiv}>
-                            <Text style={styles.modalLabel}>PAID OUT IN LAST 24 HOURS</Text>
-                            <Text style={styles.modalValue}>{modalEarnings24} {modalAbbv}</Text>
-                        </View>
-                        
-                        <View style={styles.modalInfoDiv}>
-                            <Text style={styles.modalLabel}>ELIGIBLE FOR PAYOUT</Text>
-                            <Text style={styles.modalValue}>{modalEligiblePayout} {modalAbbv}</Text>
-                        </View>
-
-                        <View style={styles.modalInfoDiv}>
-                            <Text style={styles.modalLabel}>ON-CHAIN PAYOUT THRESHOLD</Text>
-                            <Text style={styles.modalValue}>{modalThreshold} {modalAbbv}</Text>
-                        </View>
-                    </View>
-                    <View>
-                        <TouchableOpacity onPress={clearModal} style={{backgroundColor: 'blue', borderRadius: 15, marginTop: 10, marginBottom: 40, padding: 10}}>
-                            <Text style={{fontWeight: '700', color: 'white', textAlign: 'center'}}>Close</Text>
-                        </TouchableOpacity>
-                    </View>
+            { initialState && 
+                <View>
+                    <InitialStateCard index={1} />
+                    <InitialStateCard index={2} />
+                    <InitialStateCard index={3} />
                 </View>
-            </Modal>
+            }
+
+            { !initialState && 
+                <ScrollView style={styles.earningsList} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
+                        <View>{comp}</View>
+                </ScrollView>
+            }
+            
+            <EarningsModal obj={modalObj} visible={modalVisible} onClearModal={clearEarningsModal} />
+            
         </View>
     );
 }
@@ -176,15 +182,10 @@ const styles = StyleSheet.create({
         flexDirection: 'column',
         flex: 1,
         width: '100%',
-    },
-    topContainer: {
-        backgroundColor: '#fff',
-        elevation: 10,
-        paddingTop: 30,
+        backgroundColor: '#ddd',
     },
     earningsList: {
-        paddingTop: 20,
-        backgroundColor: '#ddd'
+        // paddingTop: 20,
     },
     errorText: {
         color: 'red',
@@ -204,49 +205,4 @@ const styles = StyleSheet.create({
         fontWeight: '700',
         textAlign: 'center',
     },
-    bottomModal: {
-    },
-    modalBody: {
-        backgroundColor: '#fff',
-        paddingTop: 22,
-        paddingHorizontal: 22,
-        borderRadius: 4,
-        borderColor: 'rgba(0, 0, 0, 0.1)',
-        maxHeight: 600,
-        minHeight: 500,
-        height: 'auto',
-        position: 'absolute',
-        bottom: -15,
-        width: '100%',
-        borderRadius: 15,
-        elevation: 10,
-        display: 'flex', 
-        flexDirection: 'column', 
-        justifyContent: 'space-between'
-    },
-    modalImage: {
-        width: 60,
-        height: 60,
-        marginHorizontal: 'auto',
-        marginTop: 4,
-        alignContent: 'center',
-        justifyContent: 'center'
-    },
-    modalTitle: {
-        fontSize: 24,
-        fontWeight: '700',
-        textAlign: 'center',
-        marginTop: 15,
-        marginBottom: 40,
-    },
-    modalInfoDiv: {
-        marginBottom: 20,
-    },
-    modalLabel: {
-        fontWeight: '700',
-        fontSize: 12,
-    },
-    modalValue: {
-        fontSize: 18,
-    }
 })

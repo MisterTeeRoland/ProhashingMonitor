@@ -1,8 +1,6 @@
 import React, {useEffect, useState} from 'react'
 import { Text, View, StyleSheet, Image, TouchableOpacity } from 'react-native';
 
-import { coinList } from '../assets/coinlist';
-
 export default function EarningsCard(props) {
 
     const abbv = props.item[1].abbreviation.toLowerCase();
@@ -14,45 +12,9 @@ export default function EarningsCard(props) {
     const threshValue = initialValue.toFixed(threshold)
     const shouldRender = props.item[1].balance.toFixed(threshold) > threshValue;
 
-    const currency = 'usd';
-
-    const [earned, setEarned] = useState(0.00);
-
     const openModal = (e) => {
         props.onOpenModal(e);
     }
-
-    const get_value = async (symbol, balance) => {
-        var id;
-
-        let amt = 0;
-        let obj = coinList.find(o => o.symbol === symbol.toLowerCase());
-
-        if (obj) {
-
-            const req = await fetch(`https://api.coingecko.com/api/v3/coins/${obj.id}?tickers=true`);
-            const res = await req.json();
-            
-            if (!res.error && res.market_data && res.market_data.current_price) {
-                let price = res.market_data.current_price[currency];
-                amt = (balance * price)
-                setEarned(amt);
-                return;
-            } else {
-                console.log(res);
-                setEarned(0)
-                return;
-            }
-        } else {
-            console.log("no coingecko object for " + symbol);
-            setEarned(0);
-            return;
-        }
-    }
-
-    useEffect(() => {
-        get_value(props.item[1].abbreviation, props.item[1].balance);
-    }, [])
     
     return (
         <View>
@@ -66,7 +28,7 @@ export default function EarningsCard(props) {
                         <Text>{props.item[1].balance.toFixed(8)} {props.item[1].abbreviation}</Text>
                     </View>
                     <View style={styles.earningValue}>
-                        <Text style={{ fontSize: 16 }}>${earned.toFixed(2)}</Text>
+                        <Text style={{ fontSize: 16 }}>${props.item[1].value.toFixed(2)}</Text>
                     </View>
 
                 </TouchableOpacity>
