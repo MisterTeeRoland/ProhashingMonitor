@@ -1,7 +1,8 @@
 
 import React from 'react';
+import { StyleSheet } from 'react-native';
 
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, DefaultTheme, DarkTheme, useTheme } from '@react-navigation/native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createMaterialBottomTabNavigator } from '@react-navigation/material-bottom-tabs';
@@ -14,8 +15,39 @@ const Tab = createMaterialBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
 export default function Navigation() {
+
+    const lightTheme = {
+        dark: false,
+        colors: {
+            primary: '#e68a2e',
+            background: '#ddd',
+            card: '#fff',
+            cardAnimated: '#e5e5e5',
+            text: '#222',
+            border: '#ccc',
+            notification: '#ccc',
+            title: '#222'
+        }
+    };
+    
+    const darkTheme = {
+        dark: true,
+        colors: {
+            primary: '#e68a2e',
+            background: '#2b2a33',
+            card: '#474464',
+            cardAnimated: '#55517e',
+            text: '#fff',
+            border: '#fff',
+            notification: '#fff',
+            title: '#fff',
+        }
+    }
+
+    const {colors} = useTheme();
+
     return (
-        <NavigationContainer>
+        <NavigationContainer theme={darkTheme}>
             <Tab.Navigator>
                 <Tab.Screen name="Earnings" component={EarningsScreen}
                     options={{
@@ -45,3 +77,7 @@ export default function Navigation() {
         </NavigationContainer>
     );
 }
+
+const styles = StyleSheet.create({
+
+})

@@ -1,16 +1,13 @@
 import React, {useEffect, useState} from 'react'
 import { Text, View, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import { useTheme } from '@react-navigation/native';
 
 export default function EarningsCard(props) {
 
+    const { colors } = useTheme();
+
     const abbv = props.item[1].abbreviation.toLowerCase();
     const source = `https://cryptoicon-api.vercel.app/api/icon/${abbv}`
-
-    //figure out whether to render or not based on threshold
-    const initialValue = 0.00;
-    const threshold = props.threshold;
-    const threshValue = initialValue.toFixed(threshold)
-    const shouldRender = props.item[1].balance.toFixed(threshold) > threshValue;
 
     const openModal = (e) => {
         props.onOpenModal(e);
@@ -18,28 +15,25 @@ export default function EarningsCard(props) {
     
     return (
         <View>
-            {(shouldRender) &&
-                <TouchableOpacity style={styles.earningCard} onPress={() => openModal()}>
-                    <View style={{ width: 40, height: 40, marginEnd: 20, }}>
-                        <Image style={styles.earningIcon} source={{ uri: source }} />
-                    </View>
-                    <View style={{ flexGrow: 1 }}>
-                        <Text style={styles.earningTitle}>{props.item[1].name}</Text>
-                        <Text>{props.item[1].balance.toFixed(8)} {props.item[1].abbreviation}</Text>
-                    </View>
-                    <View style={styles.earningValue}>
-                        <Text style={{ fontSize: 16 }}>${props.item[1].value.toFixed(2)}</Text>
-                    </View>
+            <TouchableOpacity style={{...styles.earningCard, backgroundColor: colors.card}} onPress={() => openModal()}>
+                <View style={{ width: 40, height: 40, marginEnd: 20, }}>
+                    <Image style={styles.earningIcon} source={{ uri: source }} />
+                </View>
+                <View style={{ flexGrow: 1 }}>
+                    <Text style={{ ...styles.earningTitle, color: colors.text }}>{props.item[1].name}</Text>
+                    <Text style={{ ...styles.earningBalance, color: colors.text }}>{props.item[1].balance.toFixed(8)} {props.item[1].abbreviation}</Text>
+                </View>
+                <View style={styles.earningValue}>
+                    <Text style={{ ...styles.earningAmount, color: colors.text }}>{props.item[1].value.toFixed(2)} {props.currency.toUpperCase()}</Text>
+                </View>
 
-                </TouchableOpacity>
-            }
+            </TouchableOpacity>
         </View>
     )
 }
 
 const styles = StyleSheet.create({
     earningCard: {
-        backgroundColor: '#fff',
         padding: 15,
         margin: 20,
         marginTop: 0,
@@ -63,6 +57,11 @@ const styles = StyleSheet.create({
     earningValue: {
         paddingTop: 11,
         paddingEnd: 10,
-        fontSize: 18,
+    },
+    earningBalance: {
+
+    },
+    earningAmount: {
+        fontSize: 16,
     }
 })

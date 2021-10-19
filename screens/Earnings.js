@@ -1,39 +1,41 @@
 import React, { useEffect, useState } from 'react';
 import { RefreshControl, Text, View, StyleSheet, TouchableOpacity, ScrollView, Modal, Alert, Image } from 'react-native';
+import { useTheme } from '@react-navigation/native';
 
 import { coinList } from '../assets/coinlist';
-import { load_api_key } from '../tools/fetches';
+import { load_keys } from '../tools/fetches';
 import InitialStateCard from '../components/InitialStateCard';
 import EarningsCard from '../components/EarningsCard';
 import EarningsModal from '../components/EarningsModal';
 
 export default function EarningsScreen() {
     let api_key;
-    const currency = 'usd';
+    let current_earnings = 0;
     const sortCase = 'value';
     // const sortCase = 'balance';
+    
+    const { colors } = useTheme();
 
     const [initialState, setInitialState] = useState(true);
 
     const [comp, setComp] = useState(null);
     const [refreshing, setRefreshing] = React.useState(false);
 
+    const [currency, setCurrency] = useState('usd');
+    const [totalValue, setTotalValue] = useState(0.00);
+
+    const [threshold, setThreshold] = useState(0.001);
+
     //modal states
     const [modalVisible, setModalVisible] = useState(false);
     const [modalObj, setModalObj] = useState({});
-
-
 
     const onRefresh = React.useCallback(() => {
         setRefreshing(true);
         run().then(() => setRefreshing(false));
     }, []);
 
-    const threshold = 8;
-
-    
-
-    const call_endpoint = async (api_key) => {
+    const call_endpoint = async (api_key, currency, threshold) => {
         if (!api_key || api_key == undefined) {
             return;
         }
@@ -42,7 +44,7 @@ export default function EarningsScreen() {
             const req = await fetch(`https://prohashing.com/api/v1/wallet?apiKey=${api_key}`);
             let res = await req.json();
             if (res.status == 'success') {
-                setComp(await renderBalances(res.data.balances))
+                setComp(await renderBalances(res.data.balances, currency, threshold))
                 setInitialState(false)
             } else {
                 throw Error('no response');
@@ -87,18 +89,26 @@ export default function EarningsScreen() {
         setModalVisible(false);
     }
     
+    const renderBalances = async (balances, currency, threshold) => {
 
-    const renderBalances = async (balances) => {
+        console.log('threshold: '+threshold)
+
         if (Object.entries(balances).length == 0) {
             return (<Text>No outstanding balances.</Text>)
         }
 
         var sortable = [];
 
+        current_earnings = 0;
+
         for (var coin in balances) {
-            balances[coin].value = await get_value(balances[coin].abbreviation, balances[coin].balance)
+            let value = await get_value(balances[coin].abbreviation, balances[coin].balance, currency)
+            current_earnings += value;
+            balances[coin].value = value;
             sortable.push([coin, balances[coin]]);
         }
+
+        setTotalValue(current_earnings);
 
         //for now, sort by coin balance
         sortable.sort(function(a, b) {
@@ -109,14 +119,16 @@ export default function EarningsScreen() {
             }
         });
 
+        let filtered = sortable.filter((item) => item[1].value >= threshold);
+
         return (
-            sortable.map((item, index) => (
-                <EarningsCard key={index} item={item} threshold={threshold} onOpenModal={() => loadItemToModal(item)} />
+            filtered.map((item, index) => (
+                <EarningsCard key={index} item={item} currency={currency} onOpenModal={() => loadItemToModal(item)} />
             ))
         )
     }
 
-    const get_value = async (symbol, balance) => {
+    const get_value = async (symbol, balance, currency) => {
 
         let amt = 0;
         let obj = coinList.find(o => o.symbol === symbol.toLowerCase());
@@ -131,19 +143,22 @@ export default function EarningsScreen() {
                 amt = (balance * price)
                 return amt;
             } else {
+                console.log('coingecko request failed');
                 console.log(res);
                 return amt;
             }
         } else {
-            // console.log("no coingecko object for " + symbol);
             return amt;
         }
     }
 
     async function run() {
         setRefreshing(true)
-        api_key = await load_api_key()
-        await call_endpoint(api_key)
+        let obj = await load_keys()
+        console.log(obj);
+        setCurrency(obj.currency);
+        setThreshold(obj.threshold);
+        await call_endpoint(obj.api_key, obj.currency, obj.threshold)
         setRefreshing(false)
     }
 
@@ -152,9 +167,12 @@ export default function EarningsScreen() {
     }, [])
 
     return (
-        <View style={styles.earningsContainer}>
+        <View style={{...styles.earningsContainer, backgroundColor: colors.background }}>
 
-            <Text style={{paddingTop: 50, paddingBottom: 20, fontSize: 20, fontWeight: '700', textAlign: 'center'}}>Earnings</Text>
+            <View style={{display: 'flex', marginStart: 20, marginEnd: 20, flexDirection: 'row', justifyContent: 'space-between', paddingTop: 50, paddingBottom: 20,}}>
+                <Text style={{fontSize: 20, fontWeight: '700', color: colors.title }}>CURRENT EARNINGS</Text>
+                <Text style={{fontSize: 20, fontWeight: '700', color: colors.title, textAlign: 'right',  flexGrow: 1, paddingEnd: 20}}>{totalValue.toFixed(2)} {currency.toUpperCase()}</Text>
+            </View>
 
             { initialState && 
                 <View>
@@ -182,7 +200,6 @@ const styles = StyleSheet.create({
         flexDirection: 'column',
         flex: 1,
         width: '100%',
-        backgroundColor: '#ddd',
     },
     earningsList: {
         // paddingTop: 20,

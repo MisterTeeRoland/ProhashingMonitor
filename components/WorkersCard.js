@@ -1,7 +1,10 @@
 import React from 'react'
 import { Text, View, StyleSheet, TouchableOpacity } from 'react-native';
+import { useTheme } from '@react-navigation/native';
 
 export default function WorkersCard(props) {
+
+    const { colors } = useTheme();
 
     const convert_hashes = (hash_rate) => {
         let arr = ['', 'H/s', 'kH/s', 'MH/s', 'GH/s', 'TH/s', 'PH/s', 'EH/s', 'ZH/s'];
@@ -24,13 +27,13 @@ export default function WorkersCard(props) {
     }
 
     return (
-        <TouchableOpacity style={styles.workerCard} onPress={() => openModal()}>
+        <TouchableOpacity style={{ ...styles.workerCard, backgroundColor: colors.card }} onPress={() => openModal()}>
             <View style={{ flexGrow: 1 }}>
-                <Text style={styles.workerTitle}>{props.item.ID}</Text>
-                <Text>{props.item.algo} - {props.item.coin}</Text>
+                <Text style={{ ...styles.workerTitle, color: colors.text }}>{props.item.ID}</Text>
+                <Text style={{ ...styles.workerDetails, color: colors.text }}>{props.item.algo} - {props.item.coin}</Text>
             </View>
             <View style={styles.hashValue}>
-                <Text style={{ fontSize: 16 }}>{convert_hashes(props.item.accepted)}</Text>
+                <Text style={{ ...styles.workerHash, color: colors.text }}>{convert_hashes(props.item.accepted)}</Text>
             </View>
         </TouchableOpacity>
     )
@@ -38,7 +41,6 @@ export default function WorkersCard(props) {
 
 const styles = StyleSheet.create({
     workerCard: {
-        backgroundColor: '#fff',
         padding: 15,
         margin: 20,
         marginTop: 0,
@@ -59,9 +61,15 @@ const styles = StyleSheet.create({
         fontWeight: '700',
         fontSize: 18,
     },
+    workerDetails: {
+
+    },
     hashValue: {
         paddingTop: 11,
         paddingEnd: 10,
         fontSize: 18,
     },
+    workerHash: {
+        fontSize: 16,
+    }
 })

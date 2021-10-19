@@ -1,15 +1,18 @@
 import React from 'react'
 import { Animated, Text, View, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import { useEffect, useState } from 'react/cjs/react.development';
+import { useTheme } from '@react-navigation/native';
 
 export default function InitialStateCard(props) {
+
+    const { colors } = useTheme();
 
     const [animation, setAnimation] = useState(new Animated.Value(0))
 
     const handleAnimation = () => {
         Animated.loop(
             Animated.sequence([
-                Animated.delay(200 * props.index),
+                Animated.delay(300 * props.index),
                 Animated.timing(animation, {
                     toValue: 1,
                     duration: 1000,
@@ -26,7 +29,7 @@ export default function InitialStateCard(props) {
 
     const boxInterpolation = animation.interpolate({
         inputRange: [0, 1],
-        outputRange: ["#fff", "#e5e5e5"]
+        outputRange: [colors.card, colors.cardAnimated]
     })
 
     const animatedStyle = {
@@ -46,7 +49,6 @@ export default function InitialStateCard(props) {
 
 const styles = StyleSheet.create({
     earningCard: {
-        backgroundColor: '#fff',
         padding: 39,
         margin: 20,
         marginTop: 0,

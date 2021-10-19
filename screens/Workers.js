@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { Text, View, ActivityIndicator, RefreshControl, StyleSheet, ScrollView, TouchableOpacity, Modal, Image } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useTheme } from '@react-navigation/native';
 
-import { load_api_key } from '../tools/fetches';
+import { load_keys } from '../tools/fetches';
 import InitialStateCard from '../components/InitialStateCard';
 import WorkersCard from '../components/WorkersCard';
 import WorkersModal from '../components/WorkersModal';
 
 export default function WorkersScreen() {
+
+    const { colors } = useTheme();
 
     let api_key;
     const [comp, setComp] = useState(null);
@@ -16,6 +19,8 @@ export default function WorkersScreen() {
 
     const [modalVisible, setModalVisible] = useState(false);
     const [modalObj, setModalObj] = useState({});
+    
+    const [numWorkers, setNumWorkers] = useState(0);
 
     const onRefresh = React.useCallback(() => {
         setRefreshing(true);
@@ -31,6 +36,7 @@ export default function WorkersScreen() {
             const req = await fetch(`https://prohashing.com/api/v1/walletEx?apiKey=${api_key}`);
             let res = await req.json();
             if (res.status == 'success') {
+                setNumWorkers(res.data.miners.length);
                 setComp(renderWorkers(res.data.miners))
                 setInitialState(false)
             } else {
@@ -101,8 +107,8 @@ export default function WorkersScreen() {
 
     async function run() {
         setRefreshing(true);
-        api_key = await load_api_key()
-        await call_endpoint(api_key)
+        let obj = await load_keys()
+        await call_endpoint(obj.api_key)
         setRefreshing(false);
     }
 
@@ -111,9 +117,12 @@ export default function WorkersScreen() {
     }, [])
 
     return (
-        <View style={styles.workersContainer}>
+        <View style={{...styles.workersContainer, backgroundColor: colors.background}}>
 
-            <Text style={{paddingTop: 50, paddingBottom: 20, fontSize: 20, fontWeight: '700', textAlign: 'center'}}>Workers</Text>
+            <View style={{display: 'flex', marginStart: 20, marginEnd: 20, flexDirection: 'row', justifyContent: 'space-between', paddingTop: 50, paddingBottom: 20,}}>
+                <Text style={{fontSize: 20, fontWeight: '700', color: colors.title }}>WORKERS CONNECTED</Text>
+                <Text style={{fontSize: 20, fontWeight: '700', color: colors.title, textAlign: 'right',  flexGrow: 1, paddingEnd: 20}}>{numWorkers}</Text>
+            </View>
 
             { initialState && 
                 <View>
@@ -140,7 +149,6 @@ const styles = StyleSheet.create({
         display: 'flex',
         flex: 1,
         width: '100%',
-        backgroundColor: '#ddd',
     },
     workersList: {
         // paddingTop: 20,

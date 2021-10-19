@@ -1,84 +1,105 @@
 import React, { useState, useEffect } from 'react';
-import { TouchableOpacity, StyleSheet, Text, View, TextInput, Alert } from 'react-native';
+import { TouchableOpacity, StyleSheet, Picker, Text, View, TextInput, Alert } from 'react-native';
+import { useTheme } from '@react-navigation/native';
 
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import {set_keys, load_keys} from '../tools/fetches';
 
 export default function SettingsScreen({ route, navigation }) {
+
+    const { colors } = useTheme();
+    
     const [api_key, setRealApiKey] = useState('');
     const [apiKey, setApiKey] = useState('');
 
-    const saveValue = () => {
-        save_api_key(apiKey)
-    }
+    const currencies = ['aed', 'ars', 'aud', 'bch', 'bdt', 'bhd', 'bmd', 'bnb', 'brl', 'btc', 'cad', 'chf', 'clp', 'cny', 'czk', 'dkk', 'dot', 'eos', 'eth', 'eur', 'gbp', 'hkd', 'huf', 'idr', 'ils', 'inr', 'jpy', 'krw', 'kwd', 'lkr', 'ltc', 'mmk', 'mxn', 'myr', 'ngn', 'nok', 'nzd', 'php', 'pkr', 'pln', 'rub', 'sar', 'sek', 'sgd', 'thb', 'try', 'twd', 'uah', 'usd', 'vef', 'vnd', 'xag', 'xau', 'xdr', 'xlm', 'xrp', 'yfi', 'zar', 'bits', 'link', 'sats'];
+    const [currency, setCurrency] = useState('usd');
+    const [currMap, setCurrMap] = useState(null);
 
-    const clearKey = () => {
-        remove_api_key()
-    }
+    const [threshold, setThreshold] = useState(0.001);
 
-    const save_api_key = async (value) => {
-        try {
-            console.log('saving api_key = ' + value)
-            await AsyncStorage.setItem('@api_key', value)
-            Alert.alert(
-                "Success",
-                "API Key has been saved.",
-                [{ text: "OK" }]
-            );
-        } catch (e) {
-            // saving error  
+    const saveKeys = async () => {
+        let success = await set_keys({api_key, currency, threshold})
+        if (success) {
+            Alert.alert("Success", "Settings updated.");
         }
     }
 
-    const load_api_key = async () => {
-        try {
-            const value = await AsyncStorage.getItem('@api_key')
-            if (value !== null) {
-                // value previously stored
-                setRealApiKey(value)
-            }
-        } catch (e) {
-            // error reading value  
-        }
+    const reset = () => {
+        setRealApiKey('');
+        setCurrency('usd');
+        setThreshold(0.001);
+        set_keys({api_key, currency, threshold});
     }
 
-    const remove_api_key = async () => {
-        try {
-            setRealApiKey('')
-            setApiKey('')
-            await AsyncStorage.removeItem('@api_key')
-            Alert.alert(
-                "Success",
-                "API Key has been cleared.",
-                [{ text: "OK" }]
-            );
-        } catch (e) {
-            // remove error
-        }
-
-        console.log('Done.')
+    const updateKey = (text) => {
+        setRealApiKey(text);
     }
 
-    const updateApiKey = (text) => {
-        setApiKey(text)
-        setRealApiKey(text)
+    const updateCurrency = (text) => {
+        setCurrency(text);
+    }
+
+    const updateThreshold = (text) => {
+        setThreshold(text);
+    }
+
+    const render_currencies = () => {
+        return (
+            currencies.map((item, index) => (
+                <Picker.Item label={item.toUpperCase()} value={item} key={index} />
+            ))
+        )
     }
 
     useEffect(() => {
-        load_api_key()
+        const load_settings = async() => {
+            let obj = await load_keys();
+            setRealApiKey(obj.api_key);
+            setCurrency(obj.currency);
+            setThreshold(obj.threshold);
+            setCurrMap(render_currencies())
+        }
+        load_settings();
     }, [])
 
     return (
         <View style={styles.container}>
-            <Text style={styles.apiLabel}>Enter your Prohashing API key here.</Text>
-            <TextInput style={styles.apiInput} onChangeText={text => updateApiKey(text)} value={api_key} />
 
-            <TouchableOpacity style={styles.button} onPress={saveValue}>
-                <Text style={styles.buttonText}>Save</Text>
-            </TouchableOpacity>
+            <View style={{display: 'flex', marginStart: 20, marginEnd: 20, flexDirection: 'row', justifyContent: 'space-between', paddingTop: 50, paddingBottom: 20,}}>
+                <Text style={{fontSize: 20, fontWeight: '700', color: colors.title }}>SETTINGS</Text>
+            </View>
 
-            <TouchableOpacity style={styles.cancelButton} onPress={clearKey}>
-                <Text style={styles.buttonText}>Clear</Text>
-            </TouchableOpacity>
+            <View style={{flexGrow: 1}}>
+
+                <View style={styles.settingsDiv}>
+                    <Text style={styles.settingsLabel}>Prohashing API key</Text>
+                    <TextInput style={styles.settingsInput} onChangeText={text => updateKey(text)} value={api_key} />
+                </View>
+
+                <View style={styles.settingsDiv}>
+                    <Text style={styles.settingsLabel}>Default Currency</Text>
+                    <View style={styles.settingsInput}>
+                        <Picker selectedValue={currency} onValueChange={(itemValue, itemIndex) => setCurrency(itemValue)} >
+                            {currMap}
+                        </Picker>
+                    </View>
+                </View>
+
+                <View style={styles.settingsDiv}>
+                    <Text style={styles.settingsLabel}>Hide small balances under:</Text>
+                    <TextInput style={styles.settingsInput} keyboardType='numeric' onChangeText={text => updateThreshold(text)} value={threshold.toString()}/>
+                </View>
+            </View>
+
+            <View>
+                <TouchableOpacity style={styles.successButton} onPress={saveKeys}>
+                    <Text style={styles.buttonText}>Save</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.cancelButton} onPress={reset}>
+                        <Text style={styles.buttonText}>Reset</Text>
+                </TouchableOpacity>
+            </View>
         </View>
     );
 };
@@ -86,33 +107,37 @@ export default function SettingsScreen({ route, navigation }) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#ddd',
+        backgroundColor: '#2b2a33',
+        color: '#fff',
         alignItems: 'center',
         justifyContent: 'center',
         padding: 50,
         width: '100%',
     },
-    apiLabel: {
+    settingsDiv: {
+        marginBottom: 40,
+    },
+    settingsLabel: {
         fontWeight: '700',
         fontSize: 18,
-        textAlign: 'center',
+        color: '#fff',
+        textAlign: 'left',
     },
-    apiInput: {
+    settingsInput: {
         height: 40,
         maxWidth: 300,
         width: 300,
-        borderColor: 'gray',
         borderWidth: 1,
-        marginTop: 20,
+        marginTop: 10,
         paddingHorizontal: 10,
         borderRadius: 15,
         backgroundColor: '#fff',
         borderColor: 'transparent',
         elevation: 3,
-
     },
-    button: {
-        backgroundColor: '#0000ff',
+    successButton: {
+        backgroundColor: '#e68a2e',
+        color: "#fff",
         padding: 8,
         marginTop: 20,
         borderRadius: 15,
@@ -120,7 +145,7 @@ const styles = StyleSheet.create({
         width: 300,
     },
     cancelButton: {
-        backgroundColor: '#aaa',
+        backgroundColor: '#4a4760',
         padding: 8,
         marginTop: 20,
         borderRadius: 15,
