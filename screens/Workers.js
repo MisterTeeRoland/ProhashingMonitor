@@ -65,7 +65,12 @@ export default function WorkersScreen() {
 
     const renderWorkers = (miners) => {
         if (miners.length == 0) {
-            return (<Text style={{ fontSize: 18, fontWeight: '700', textAlign: 'center' }}>No workers running.</Text>)
+            return (
+                <View>
+                    <Text style={{paddingHorizontal: 20, fontWeight: '700', fontSize: 18, color: colors.text}}>No active workers.</Text>
+                    <Text style={{paddingHorizontal: 20, paddingTop: 20, fontWeight: '700', color: colors.text}}>Make sure you have entered a valid Prohashing API key in the Settings tab and that your miner(s) are connected and running.</Text>
+                </View>
+            )
         }
 
         return (
@@ -105,6 +110,24 @@ export default function WorkersScreen() {
         setModalVisible(false);
     }
 
+    async function checkForUpdate() {
+        try {
+            const update = await Updates.checkForUpdateAsync();
+            if (update.isAvailable) {
+                await Updates.fetchUpdateAsync();
+                // ... notify user of update ...
+                Alert.alert(
+                    "New update available!",
+                    "The app will refresh to apply new changes.",
+                    [
+                        { text: "OK", onPress: async () => await Updates.reloadAsync() }
+                    ]
+                );
+            }
+        } catch (e) {
+        }
+    }
+
     async function run() {
         setRefreshing(true);
         let obj = await load_keys()
@@ -113,22 +136,23 @@ export default function WorkersScreen() {
     }
 
     useEffect(() => {
+        checkForUpdate();
         run()
     }, [])
 
     return (
         <View style={{...styles.workersContainer, backgroundColor: colors.background}}>
 
-            <View style={{display: 'flex', marginStart: 20, marginEnd: 20, flexDirection: 'row', justifyContent: 'space-between', paddingTop: 50, paddingBottom: 20,}}>
-                <Text style={{fontSize: 20, fontWeight: '700', color: colors.title }}>WORKERS CONNECTED</Text>
-                <Text style={{fontSize: 20, fontWeight: '700', color: colors.title, textAlign: 'right',  flexGrow: 1, paddingEnd: 20}}>{numWorkers}</Text>
+            <View style={styles.containerHeader}>
+                <Text style={{...styles.headerText, color: colors.title}}>WORKERS</Text>
+                <Text style={{...styles.headerSubtext, color: colors.subtitle}}>Connected: {numWorkers}</Text>
             </View>
 
             { initialState && 
                 <View>
-                    <InitialStateCard />
-                    <InitialStateCard />
-                    <InitialStateCard />
+                    <InitialStateCard index={1} />
+                    <InitialStateCard index={2} />
+                    <InitialStateCard index={3} />
                 </View>
             }
 
@@ -150,8 +174,20 @@ const styles = StyleSheet.create({
         flex: 1,
         width: '100%',
     },
+    containerHeader: {
+        marginHorizontal: 23, 
+        paddingTop: 50, 
+        paddingBottom: 30,
+    },
+    headerText: {
+        fontSize: 32,
+        fontWeight: '700',
+    },
+    headerSubtext: {
+        fontSize: 16,
+        fontWeight: '700',
+    },
     workersList: {
-        // paddingTop: 20,
     },
     errorText: {
         color: 'red',

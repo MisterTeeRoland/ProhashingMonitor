@@ -26,7 +26,8 @@ export default function Navigation() {
             text: '#222',
             border: '#ccc',
             notification: '#ccc',
-            title: '#222'
+            title: '#222',
+            subtitle: '#666'
         }
     };
     
@@ -41,6 +42,8 @@ export default function Navigation() {
             border: '#fff',
             notification: '#fff',
             title: '#fff',
+            subtitle: '#ccc',
+            modalBg: '#514f66'
         }
     }
 

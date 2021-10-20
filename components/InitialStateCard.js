@@ -1,13 +1,12 @@
-import React from 'react'
-import { Animated, Text, View, Image, StyleSheet, TouchableOpacity } from 'react-native';
-import { useEffect, useState } from 'react/cjs/react.development';
+import React, { useState, useEffect, useRef } from 'react';
+import { Animated, View, StyleSheet } from 'react-native';
 import { useTheme } from '@react-navigation/native';
 
 export default function InitialStateCard(props) {
 
     const { colors } = useTheme();
 
-    const [animation, setAnimation] = useState(new Animated.Value(0))
+    const animation = useRef(new Animated.Value(0)).current;
 
     const handleAnimation = () => {
         Animated.loop(

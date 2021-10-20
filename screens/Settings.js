@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { TouchableOpacity, StyleSheet, Picker, Text, View, TextInput, Alert } from 'react-native';
+import { TouchableOpacity, StyleSheet, Picker, Text, View, TextInput, Alert, Switch } from 'react-native';
 import { useTheme } from '@react-navigation/native';
+
+import * as Updates from 'expo-updates';
 
 import {set_keys, load_keys} from '../tools/fetches';
 
@@ -16,6 +18,10 @@ export default function SettingsScreen({ route, navigation }) {
     const [currMap, setCurrMap] = useState(null);
 
     const [threshold, setThreshold] = useState(0.001);
+
+    const [isEnabled, setIsEnabled] = useState(false);
+    const toggleSwitch = () => setIsEnabled(previousState => !previousState);
+
 
     const saveKeys = async () => {
         let success = await set_keys({api_key, currency, threshold})
@@ -51,7 +57,26 @@ export default function SettingsScreen({ route, navigation }) {
         )
     }
 
+    async function checkForUpdate() {
+        try {
+            const update = await Updates.checkForUpdateAsync();
+            if (update.isAvailable) {
+                await Updates.fetchUpdateAsync();
+                // ... notify user of update ...
+                Alert.alert(
+                    "New update available!",
+                    "The app will refresh to apply new changes.",
+                    [
+                        { text: "OK", onPress: async () => await Updates.reloadAsync() }
+                    ]
+                );
+            }
+        } catch (e) {
+        }
+    }
+
     useEffect(() => {
+        checkForUpdate();
         const load_settings = async() => {
             let obj = await load_keys();
             setRealApiKey(obj.api_key);
@@ -88,6 +113,17 @@ export default function SettingsScreen({ route, navigation }) {
                 <View style={styles.settingsDiv}>
                     <Text style={styles.settingsLabel}>Hide small balances under:</Text>
                     <TextInput style={styles.settingsInput} keyboardType='numeric' onChangeText={text => updateThreshold(text)} value={threshold.toString()}/>
+                </View>
+
+                <View style={{...styles.settingsDiv, display: 'flex', flexDirection: 'row', justifyContent: 'space-between'}}>
+                    <Text style={styles.settingsLabel}>Dark Mode</Text>
+                    <Switch
+                        trackColor={{ false: '#767577', true: '#81b0ff' }}
+                        thumbColor={isEnabled ? '#f5dd4b' : '#f4f3f4'}
+                        ios_backgroundColor="#3e3e3e"
+                        onValueChange={toggleSwitch}
+                        value={isEnabled}
+                    />
                 </View>
             </View>
 

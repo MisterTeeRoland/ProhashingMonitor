@@ -8,6 +8,8 @@ import InitialStateCard from '../components/InitialStateCard';
 import EarningsCard from '../components/EarningsCard';
 import EarningsModal from '../components/EarningsModal';
 
+import * as Updates from 'expo-updates';
+
 export default function EarningsScreen() {
     let api_key;
     let current_earnings = 0;
@@ -91,10 +93,13 @@ export default function EarningsScreen() {
     
     const renderBalances = async (balances, currency, threshold) => {
 
-        console.log('threshold: '+threshold)
-
         if (Object.entries(balances).length == 0) {
-            return (<Text>No outstanding balances.</Text>)
+            return (
+                <View>
+                    <Text style={{paddingHorizontal: 20, fontWeight: '700', fontSize: 18, color: colors.text}}>No current balance.</Text>
+                    <Text style={{paddingHorizontal: 20, paddingTop: 20, fontWeight: '700', color: colors.text}}>Make sure you have entered a valid Prohashing API key in the Settings tab and that your miner(s) are connected and running.</Text>
+                </View>
+            )
         }
 
         var sortable = [];
@@ -152,10 +157,27 @@ export default function EarningsScreen() {
         }
     }
 
+    async function checkForUpdate() {
+        try {
+            const update = await Updates.checkForUpdateAsync();
+            if (update.isAvailable) {
+                await Updates.fetchUpdateAsync();
+                // ... notify user of update ...
+                Alert.alert(
+                    "New update available!",
+                    "The app will refresh to apply new changes.",
+                    [
+                        { text: "OK", onPress: async () => await Updates.reloadAsync() }
+                    ]
+                );
+            }
+        } catch (e) {
+        }
+    }
+
     async function run() {
         setRefreshing(true)
         let obj = await load_keys()
-        console.log(obj);
         setCurrency(obj.currency);
         setThreshold(obj.threshold);
         await call_endpoint(obj.api_key, obj.currency, obj.threshold)
@@ -163,15 +185,16 @@ export default function EarningsScreen() {
     }
 
     useEffect(() => {
-        run()
+        checkForUpdate();
+        run();
     }, [])
 
     return (
         <View style={{...styles.earningsContainer, backgroundColor: colors.background }}>
 
-            <View style={{display: 'flex', marginStart: 20, marginEnd: 20, flexDirection: 'row', justifyContent: 'space-between', paddingTop: 50, paddingBottom: 20,}}>
-                <Text style={{fontSize: 20, fontWeight: '700', color: colors.title }}>CURRENT EARNINGS</Text>
-                <Text style={{fontSize: 20, fontWeight: '700', color: colors.title, textAlign: 'right',  flexGrow: 1, paddingEnd: 20}}>{totalValue.toFixed(2)} {currency.toUpperCase()}</Text>
+            <View style={styles.containerHeader}>
+                <Text style={{...styles.headerText, color: colors.title}}>EARNINGS</Text>
+                <Text style={{...styles.headerSubtext, color: colors.subtitle}}>Current Value: {totalValue.toFixed(2)} {currency.toUpperCase()}</Text>
             </View>
 
             { initialState && 
@@ -201,8 +224,20 @@ const styles = StyleSheet.create({
         flex: 1,
         width: '100%',
     },
+    containerHeader: {
+        marginHorizontal: 23, 
+        paddingTop: 50, 
+        paddingBottom: 30,
+    },
+    headerText: {
+        fontSize: 32,
+        fontWeight: '700',
+    },
+    headerSubtext: {
+        fontSize: 16,
+        fontWeight: '700',
+    },
     earningsList: {
-        // paddingTop: 20,
     },
     errorText: {
         color: 'red',

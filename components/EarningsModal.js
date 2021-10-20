@@ -1,7 +1,10 @@
 import React from "react";
 import {StyleSheet, Modal, View, Text, Image, TouchableOpacity} from 'react-native';
+import {useTheme} from '@react-navigation/native';
 
 export default function EarningsModal(props) {
+
+    const { colors } = useTheme();
 
     const clearModal = (e) => {
         props.onClearModal(e);
@@ -15,41 +18,41 @@ export default function EarningsModal(props) {
                 onRequestClose={() => { clearModal(); }}
                 style={styles.bottomModal}
             >
-                <View style={styles.modalBody}>
+                <View style={{...styles.modalBody, backgroundColor: colors.modalBg}}>
                     <View style={{flexGrow: 1}}>
                         <View style={{flexDirection: 'row', justifyContent: 'center', width: '100%', alignContent: 'center'}}>
                             <Image style={styles.modalImage} source={{ uri: props.obj.image }} />
                         </View>
-                        <Text style={styles.modalTitle}>{props.obj.title}</Text>
+                        <Text style={{...styles.modalTitle, color: colors.text}}>{props.obj.title}</Text>
 
                         <View style={styles.modalInfoDiv}>
-                            <Text style={styles.modalLabel}>CURRENT VALUE</Text>
-                            <Text style={styles.modalValue}>${props.obj.earnings}</Text>
+                            <Text style={{...styles.modalLabel, color: colors.subtitle}}>CURRENT VALUE</Text>
+                            <Text style={{...styles.modalValue, color: colors.text}}>${props.obj.earnings}</Text>
                         </View>
 
                         <View style={styles.modalInfoDiv}>
-                            <Text style={styles.modalLabel}>CURRENT BALANCE</Text>
-                            <Text style={styles.modalValue}>{props.obj.balance} {props.obj.abbv}</Text>
+                            <Text style={{...styles.modalLabel, color: colors.subtitle}}>CURRENT BALANCE</Text>
+                            <Text style={{...styles.modalValue, color: colors.text}}>{props.obj.balance} {props.obj.abbv}</Text>
                         </View>
 
                         <View style={styles.modalInfoDiv}>
-                            <Text style={styles.modalLabel}>PAID OUT IN LAST 24 HOURS</Text>
-                            <Text style={styles.modalValue}>{props.obj.earnings24} {props.obj.abbv}</Text>
+                            <Text style={{...styles.modalLabel, color: colors.subtitle}}>PAID OUT IN LAST 24 HOURS</Text>
+                            <Text style={{...styles.modalValue, color: colors.text}}>{props.obj.earnings24} {props.obj.abbv}</Text>
                         </View>
                         
                         <View style={styles.modalInfoDiv}>
-                            <Text style={styles.modalLabel}>ELIGIBLE FOR PAYOUT</Text>
-                            <Text style={styles.modalValue}>{props.obj.eligiblePayout} {props.obj.abbv}</Text>
+                            <Text style={{...styles.modalLabel, color: colors.subtitle}}>ELIGIBLE FOR PAYOUT</Text>
+                            <Text style={{...styles.modalValue, color: colors.text}}>{props.obj.eligiblePayout} {props.obj.abbv}</Text>
                         </View>
 
                         <View style={styles.modalInfoDiv}>
-                            <Text style={styles.modalLabel}>ON-CHAIN PAYOUT THRESHOLD</Text>
-                            <Text style={styles.modalValue}>{props.obj.threshold} {props.obj.abbv}</Text>
+                            <Text style={{...styles.modalLabel, color: colors.subtitle}}>ON-CHAIN PAYOUT THRESHOLD</Text>
+                            <Text style={{...styles.modalValue, color: colors.text}}>{props.obj.threshold} {props.obj.abbv}</Text>
                         </View>
                     </View>
                     <View>
-                        <TouchableOpacity onPress={clearModal} style={{backgroundColor: 'blue', borderRadius: 15, marginTop: 10, marginBottom: 40, padding: 10}}>
-                            <Text style={{fontWeight: '700', color: 'white', textAlign: 'center'}}>Close</Text>
+                        <TouchableOpacity onPress={clearModal} style={{backgroundColor: colors.primary, borderRadius: 15, marginTop: 10, marginBottom: 40, padding: 10}}>
+                            <Text style={{fontWeight: '700', color: 'white', textAlign: 'center'}}>CLOSE</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -61,7 +64,6 @@ const styles = StyleSheet.create({
     bottomModal: {
     },
     modalBody: {
-        backgroundColor: '#fff',
         paddingTop: 22,
         paddingHorizontal: 22,
         borderRadius: 4,
@@ -102,5 +104,6 @@ const styles = StyleSheet.create({
     },
     modalValue: {
         fontSize: 18,
+        fontWeight: '700'
     }
 })
