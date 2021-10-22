@@ -12,6 +12,8 @@ export default function WorkersScreen() {
 
     const { colors } = useTheme();
 
+    const [loadText, setLoadText] = useState("");
+
     let api_key;
     const [comp, setComp] = useState(null);
     const [refreshing, setRefreshing] = useState(false);
@@ -33,6 +35,7 @@ export default function WorkersScreen() {
         }
 
         try {
+            setLoadText("...getting worker data...");
             const req = await fetch(`https://prohashing.com/api/v1/walletEx?apiKey=${api_key}`);
             let res = await req.json();
             if (res.status == 'success') {
@@ -133,6 +136,7 @@ export default function WorkersScreen() {
         let obj = await load_keys()
         await call_endpoint(obj.api_key)
         setRefreshing(false);
+        setLoadText("");
     }
 
     useEffect(() => {
@@ -147,6 +151,8 @@ export default function WorkersScreen() {
                 <Text style={{...styles.headerText, color: colors.title}}>WORKERS</Text>
                 <Text style={{...styles.headerSubtext, color: colors.subtitle}}>Connected: {numWorkers}</Text>
             </View>
+
+            <Text style={{fontSize: 12, color: colors.subtitle, textAlign: 'center', marginBottom: 5,}}>{loadText}</Text>
 
             { initialState && 
                 <View>
@@ -177,7 +183,7 @@ const styles = StyleSheet.create({
     containerHeader: {
         marginHorizontal: 23, 
         paddingTop: 50, 
-        paddingBottom: 30,
+        paddingBottom: 10,
     },
     headerText: {
         fontSize: 32,

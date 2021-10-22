@@ -16,6 +16,8 @@ export default function EarningsScreen() {
     const sortCase = 'value';
     // const sortCase = 'balance';
     
+    const [loadText, setLoadText] = useState("");
+
     const { colors } = useTheme();
 
     const [initialState, setInitialState] = useState(true);
@@ -39,10 +41,12 @@ export default function EarningsScreen() {
 
     const call_endpoint = async (api_key, currency, threshold) => {
         if (!api_key || api_key == undefined) {
+            //TODO set Comp to an error state about no API key
             return;
         }
 
         try {
+            setLoadText("...getting account data...");
             const req = await fetch(`https://prohashing.com/api/v1/wallet?apiKey=${api_key}`);
             let res = await req.json();
             if (res.status == 'success') {
@@ -93,6 +97,8 @@ export default function EarningsScreen() {
     
     const renderBalances = async (balances, currency, threshold) => {
 
+        setLoadText("...getting coin balances...");
+
         if (Object.entries(balances).length == 0) {
             return (
                 <View>
@@ -140,21 +146,21 @@ export default function EarningsScreen() {
 
         if (obj) {
 
-            const req = await fetch(`https://api.coingecko.com/api/v3/coins/${obj.id}?tickers=true`);
+            //TODO: you can comma separate all objects and get the whole thing in one call :eyes:
+            const req = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${obj.id}&vs_currencies=${currency}`);
             const res = await req.json();
             
-            if (!res.error && res.market_data && res.market_data.current_price) {
-                let price = res.market_data.current_price[currency];
-                amt = (balance * price)
-                return amt;
+            //todo: this is only expecting one coin response. need to refactor for multiple
+            if (Object.entries(res).length > 0) {
+                for (const [coin, value] of Object.entries(res)) {
+                    return value[currency] * balance;
+                }
             } else {
-                console.log('coingecko request failed');
-                console.log(res);
-                return amt;
+                console.log('no coingecko response for '+obj.id);
             }
-        } else {
-            return amt;
-        }
+        } 
+
+        return amt;
     }
 
     async function checkForUpdate() {
@@ -182,6 +188,7 @@ export default function EarningsScreen() {
         setThreshold(obj.threshold);
         await call_endpoint(obj.api_key, obj.currency, obj.threshold)
         setRefreshing(false)
+        setLoadText("");
     }
 
     useEffect(() => {
@@ -196,6 +203,8 @@ export default function EarningsScreen() {
                 <Text style={{...styles.headerText, color: colors.title}}>EARNINGS</Text>
                 <Text style={{...styles.headerSubtext, color: colors.subtitle}}>Current Value: {totalValue.toFixed(2)} {currency.toUpperCase()}</Text>
             </View>
+
+            <Text style={{fontSize: 12, color: colors.subtitle, textAlign: 'center', marginBottom: 5,}}>{loadText}</Text>
 
             { initialState && 
                 <View>
@@ -227,7 +236,7 @@ const styles = StyleSheet.create({
     containerHeader: {
         marginHorizontal: 23, 
         paddingTop: 50, 
-        paddingBottom: 30,
+        paddingBottom: 10,
     },
     headerText: {
         fontSize: 32,
