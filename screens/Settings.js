@@ -1,40 +1,56 @@
 import React, { useState, useEffect } from 'react';
-import { TouchableOpacity, StyleSheet, Picker, Text, View, TextInput, Alert, Switch } from 'react-native';
-import { useTheme } from '@react-navigation/native';
+import { TouchableOpacity, StyleSheet, Picker, Text, View, TextInput, Alert, Switch, ScrollView } from 'react-native';
+import {MaterialCommunityIcons} from '@expo/vector-icons';
 
-import * as Updates from 'expo-updates';
-
+import APIKeyDirections from '../components/APIKeyDirections';
 import {set_keys, load_keys} from '../tools/fetches';
 
-export default function SettingsScreen({ route, navigation }) {
-
-    const { colors } = useTheme();
+// export default function SettingsScreen({navigation, route}) {
+export default function SettingsScreen(props) {
     
-    const [api_key, setRealApiKey] = useState('');
-    const [apiKey, setApiKey] = useState('');
+    const [api_key, setRealApiKey] = useState(props.apiKey);
 
     const currencies = ['aed', 'ars', 'aud', 'bch', 'bdt', 'bhd', 'bmd', 'bnb', 'brl', 'btc', 'cad', 'chf', 'clp', 'cny', 'czk', 'dkk', 'dot', 'eos', 'eth', 'eur', 'gbp', 'hkd', 'huf', 'idr', 'ils', 'inr', 'jpy', 'krw', 'kwd', 'lkr', 'ltc', 'mmk', 'mxn', 'myr', 'ngn', 'nok', 'nzd', 'php', 'pkr', 'pln', 'rub', 'sar', 'sek', 'sgd', 'thb', 'try', 'twd', 'uah', 'usd', 'vef', 'vnd', 'xag', 'xau', 'xdr', 'xlm', 'xrp', 'yfi', 'zar', 'bits', 'link', 'sats'];
-    const [currency, setCurrency] = useState('usd');
+    const [currency, setCurrency] = useState(props.currency);
     const [currMap, setCurrMap] = useState(null);
 
-    const [threshold, setThreshold] = useState(0.001);
+    const [threshold, setThreshold] = useState(props.threshold);
 
-    const [isEnabled, setIsEnabled] = useState(false);
-    const toggleSwitch = () => setIsEnabled(previousState => !previousState);
+    const [showDirections, setShowDirections] = useState(false);
 
+    const [isEnabled, setIsEnabled] = useState(props.theme.dark);
+
+    const toggleSwitch = async (active) => {
+        setIsEnabled(active)
+        let theme = active ? 'dark': 'light';
+        let success = await set_keys({api_key, currency, threshold: threshold.toString(), theme})
+        if (success) {
+            changeSettings({api_key, currency, threshold, theme})
+        }
+    };
 
     const saveKeys = async () => {
-        let success = await set_keys({api_key, currency, threshold})
-        if (success) {
+        let theme = isEnabled ? 'dark' : 'light';
+        let success = await set_keys({api_key, currency, threshold: threshold.toString(), theme})
+        if (success) {            
             Alert.alert("Success", "Settings updated.");
+            changeSettings({api_key, currency, threshold, theme})
         }
     }
 
-    const reset = () => {
+    const changeSettings = (e) => {
+        props.onSettingsChanged(e);
+    }
+
+    const reset = async () => {
         setRealApiKey('');
         setCurrency('usd');
         setThreshold(0.001);
-        set_keys({api_key, currency, threshold});
+        setIsEnabled(false);
+        let success = await set_keys({api_key: '', currency: 'usd', threshold: '0.001', theme: 'light'});
+        if (success) {
+            Alert.alert("Success", "Settings reset.");
+        }
     }
 
     const updateKey = (text) => {
@@ -57,112 +73,106 @@ export default function SettingsScreen({ route, navigation }) {
         )
     }
 
-    async function checkForUpdate() {
-        try {
-            const update = await Updates.checkForUpdateAsync();
-            if (update.isAvailable) {
-                await Updates.fetchUpdateAsync();
-                // ... notify user of update ...
-                Alert.alert(
-                    "New update available!",
-                    "The app will refresh to apply new changes.",
-                    [
-                        { text: "OK", onPress: async () => await Updates.reloadAsync() }
-                    ]
-                );
-            }
-        } catch (e) {
-        }
+    const showAPIDirections = () => {
+        setShowDirections(true)
+    }
+
+    const hideAPIDirections = () => {
+        setShowDirections(false)
     }
 
     useEffect(() => {
-        checkForUpdate();
-        const load_settings = async() => {
-            let obj = await load_keys();
-            setRealApiKey(obj.api_key);
-            setCurrency(obj.currency);
-            setThreshold(obj.threshold);
-            setCurrMap(render_currencies())
-        }
-        load_settings();
+        setCurrMap(render_currencies())
     }, [])
 
     return (
-        <View style={styles.container}>
+        <ScrollView style={styles(props.theme).container}>
+            <View>
 
-            <View style={{display: 'flex', marginStart: 20, marginEnd: 20, flexDirection: 'row', justifyContent: 'space-between', paddingTop: 50, paddingBottom: 20,}}>
-                <Text style={{fontSize: 20, fontWeight: '700', color: colors.title }}>SETTINGS</Text>
-            </View>
-
-            <View style={{flexGrow: 1}}>
-
-                <View style={styles.settingsDiv}>
-                    <Text style={styles.settingsLabel}>Prohashing API key</Text>
-                    <TextInput style={styles.settingsInput} onChangeText={text => updateKey(text)} value={api_key} />
+                <View style={styles(props.theme).containerHeader}>
+                    <Text style={{...styles(props.theme).headerText, color: props.theme.colors.title}}>SETTINGS</Text>
                 </View>
 
-                <View style={styles.settingsDiv}>
-                    <Text style={styles.settingsLabel}>Default Currency</Text>
-                    <View style={styles.settingsInput}>
-                        <Picker selectedValue={currency} onValueChange={(itemValue, itemIndex) => setCurrency(itemValue)} >
-                            {currMap}
-                        </Picker>
+                 <View>
+
+                    <View style={styles(props.theme).settingsDiv}>
+                        <Text style={styles(props.theme).settingsLabel}>Prohashing API key  <MaterialCommunityIcons name="account-question" color={props.theme.colors.text} size={20} onPress={showAPIDirections} /></Text>
+                        <TextInput style={styles(props.theme).settingsInput} onChangeText={text => updateKey(text)} value={api_key} />
+                    </View>
+
+                    <View style={styles(props.theme).settingsDiv}>
+                        <Text style={styles(props.theme).settingsLabel}>Default Currency</Text>
+                        <View style={{...styles(props.theme).settingsInput, paddingBottom: 50}}>
+                            <Picker selectedValue={currency} onValueChange={(itemValue, itemIndex) => setCurrency(itemValue)} >
+                                {currMap}
+                            </Picker>
+                        </View>
+                    </View>
+
+                    <View style={styles(props.theme).settingsDiv}>
+                        <Text style={styles(props.theme).settingsLabel}>Hide small balances under:</Text>
+                        <TextInput style={styles(props.theme).settingsInput} keyboardType='numeric' onChangeText={text => updateThreshold(text)} value={threshold.toString()}/>
+                    </View>
+
+                    <View style={{...styles(props.theme).settingsDiv, display: 'flex', flexDirection: 'row', justifyContent: 'space-between'}}>
+                        <Text style={styles(props.theme).settingsLabel}>Dark Mode</Text>
+                        <Switch
+                            trackColor={{ false: '#767577', true: '#4a4760' }}
+                            thumbColor={isEnabled ? '#e68a2e' : '#f4f3f4'}
+                            ios_backgroundColor="#3e3e3e"
+                            onValueChange={toggleSwitch}
+                            value={isEnabled}
+                        />
                     </View>
                 </View>
 
-                <View style={styles.settingsDiv}>
-                    <Text style={styles.settingsLabel}>Hide small balances under:</Text>
-                    <TextInput style={styles.settingsInput} keyboardType='numeric' onChangeText={text => updateThreshold(text)} value={threshold.toString()}/>
-                </View>
+                <View>
+                    <TouchableOpacity style={styles(props.theme).successButton} onPress={saveKeys}>
+                        <Text style={styles(props.theme).buttonText}>Save</Text>
+                    </TouchableOpacity>
 
-                <View style={{...styles.settingsDiv, display: 'flex', flexDirection: 'row', justifyContent: 'space-between'}}>
-                    <Text style={styles.settingsLabel}>Dark Mode</Text>
-                    <Switch
-                        trackColor={{ false: '#767577', true: '#81b0ff' }}
-                        thumbColor={isEnabled ? '#f5dd4b' : '#f4f3f4'}
-                        ios_backgroundColor="#3e3e3e"
-                        onValueChange={toggleSwitch}
-                        value={isEnabled}
-                    />
+                    <TouchableOpacity style={styles(props.theme).cancelButton} onPress={reset}>
+                            <Text style={styles(props.theme).buttonText}>Reset</Text>
+                    </TouchableOpacity>
                 </View>
             </View>
 
-            <View>
-                <TouchableOpacity style={styles.successButton} onPress={saveKeys}>
-                    <Text style={styles.buttonText}>Save</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity style={styles.cancelButton} onPress={reset}>
-                        <Text style={styles.buttonText}>Reset</Text>
-                </TouchableOpacity>
-            </View>
-        </View>
+            { showDirections &&
+                <APIKeyDirections onCloseModal={hideAPIDirections} theme={props.theme} />
+            }
+        </ScrollView>
     );
 };
 
-const styles = StyleSheet.create({
+const styles = theme => StyleSheet.create({
     container: {
+        display: 'flex',
         flex: 1,
-        backgroundColor: '#2b2a33',
-        color: '#fff',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: 50,
         width: '100%',
+        backgroundColor: theme.colors.background,
+    },
+    containerHeader: {
+        marginHorizontal: 23, 
+        paddingTop: 50, 
+        paddingBottom: 10,
+    },
+    headerText: {
+        fontSize: 32,
+        fontWeight: '700',
+        marginBottom: 20,
     },
     settingsDiv: {
-        marginBottom: 40,
+        marginBottom: 30,
+        paddingHorizontal: 20,
     },
     settingsLabel: {
+        color: theme.colors.text,
         fontWeight: '700',
         fontSize: 18,
-        color: '#fff',
         textAlign: 'left',
     },
     settingsInput: {
         height: 40,
-        maxWidth: 300,
-        width: 300,
         borderWidth: 1,
         marginTop: 10,
         paddingHorizontal: 10,
@@ -172,21 +182,21 @@ const styles = StyleSheet.create({
         elevation: 3,
     },
     successButton: {
-        backgroundColor: '#e68a2e',
+        backgroundColor: theme.colors.primary,
         color: "#fff",
         padding: 8,
         marginTop: 20,
         borderRadius: 15,
         height: 40,
-        width: 300,
+        marginHorizontal: 20,
     },
     cancelButton: {
-        backgroundColor: '#4a4760',
+        backgroundColor: theme.colors.secondary,
         padding: 8,
         marginTop: 20,
         borderRadius: 15,
         height: 40,
-        width: 300,
+        marginHorizontal: 20,
     },
     buttonText: {
         color: '#fff',

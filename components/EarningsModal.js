@@ -1,10 +1,7 @@
 import React from "react";
 import {StyleSheet, Modal, View, Text, Image, TouchableOpacity} from 'react-native';
-import {useTheme} from '@react-navigation/native';
 
 export default function EarningsModal(props) {
-
-    const { colors } = useTheme();
 
     const clearModal = (e) => {
         props.onClearModal(e);
@@ -16,42 +13,42 @@ export default function EarningsModal(props) {
                 transparent={true}
                 visible={props.visible}
                 onRequestClose={() => { clearModal(); }}
-                style={styles.bottomModal}
+                style={styles(props.theme).bottomModal}
             >
-                <View style={{...styles.modalBody, backgroundColor: colors.modalBg}}>
+                <View style={{...styles(props.theme).modalBody, backgroundColor: props.theme.colors.modalBg}}>
                     <View style={{flexGrow: 1}}>
                         <View style={{flexDirection: 'row', justifyContent: 'center', width: '100%', alignContent: 'center'}}>
-                            <Image style={styles.modalImage} source={{ uri: props.obj.image }} />
+                            <Image style={styles(props.theme).modalImage} source={{ uri: props.obj.image }} />
                         </View>
-                        <Text style={{...styles.modalTitle, color: colors.text}}>{props.obj.title}</Text>
+                        <Text style={{...styles(props.theme).modalTitle, color: props.theme.colors.text}}>{props.obj.title}</Text>
 
-                        <View style={styles.modalInfoDiv}>
-                            <Text style={{...styles.modalLabel, color: colors.subtitle}}>CURRENT VALUE</Text>
-                            <Text style={{...styles.modalValue, color: colors.text}}>${props.obj.earnings}</Text>
-                        </View>
-
-                        <View style={styles.modalInfoDiv}>
-                            <Text style={{...styles.modalLabel, color: colors.subtitle}}>CURRENT BALANCE</Text>
-                            <Text style={{...styles.modalValue, color: colors.text}}>{props.obj.balance} {props.obj.abbv}</Text>
+                        <View style={styles(props.theme).modalInfoDiv}>
+                            <Text style={{...styles(props.theme).modalLabel, color: props.theme.colors.subtitle}}>CURRENT VALUE</Text>
+                            <Text style={{...styles(props.theme).modalValue, color: props.theme.colors.text}}>${props.obj.earnings}</Text>
                         </View>
 
-                        <View style={styles.modalInfoDiv}>
-                            <Text style={{...styles.modalLabel, color: colors.subtitle}}>PAID OUT IN LAST 24 HOURS</Text>
-                            <Text style={{...styles.modalValue, color: colors.text}}>{props.obj.earnings24} {props.obj.abbv}</Text>
+                        <View style={styles(props.theme).modalInfoDiv}>
+                            <Text style={{...styles(props.theme).modalLabel, color: props.theme.colors.subtitle}}>CURRENT BALANCE</Text>
+                            <Text style={{...styles(props.theme).modalValue, color: props.theme.colors.text}}>{props.obj.balance} {props.obj.abbv}</Text>
+                        </View>
+
+                        <View style={styles(props.theme).modalInfoDiv}>
+                            <Text style={{...styles(props.theme).modalLabel, color: props.theme.colors.subtitle}}>PAID OUT IN LAST 24 HOURS</Text>
+                            <Text style={{...styles(props.theme).modalValue, color: props.theme.colors.text}}>{props.obj.earnings24} {props.obj.abbv}</Text>
                         </View>
                         
-                        <View style={styles.modalInfoDiv}>
-                            <Text style={{...styles.modalLabel, color: colors.subtitle}}>ELIGIBLE FOR PAYOUT</Text>
-                            <Text style={{...styles.modalValue, color: colors.text}}>{props.obj.eligiblePayout} {props.obj.abbv}</Text>
+                        <View style={styles(props.theme).modalInfoDiv}>
+                            <Text style={{...styles(props.theme).modalLabel, color: props.theme.colors.subtitle}}>ELIGIBLE FOR PAYOUT</Text>
+                            <Text style={{...styles(props.theme).modalValue, color: props.theme.colors.text}}>{props.obj.eligiblePayout} {props.obj.abbv}</Text>
                         </View>
 
-                        <View style={styles.modalInfoDiv}>
-                            <Text style={{...styles.modalLabel, color: colors.subtitle}}>ON-CHAIN PAYOUT THRESHOLD</Text>
-                            <Text style={{...styles.modalValue, color: colors.text}}>{props.obj.threshold} {props.obj.abbv}</Text>
+                        <View style={styles(props.theme).modalInfoDiv}>
+                            <Text style={{...styles(props.theme).modalLabel, color: props.theme.colors.subtitle}}>ON-CHAIN PAYOUT THRESHOLD</Text>
+                            <Text style={{...styles(props.theme).modalValue, color: props.theme.colors.text}}>{props.obj.threshold} {props.obj.abbv}</Text>
                         </View>
                     </View>
                     <View>
-                        <TouchableOpacity onPress={clearModal} style={{backgroundColor: colors.primary, borderRadius: 15, marginTop: 10, marginBottom: 40, padding: 10}}>
+                        <TouchableOpacity onPress={clearModal} style={{backgroundColor: props.theme.colors.primary, borderRadius: 15, marginTop: 10, marginBottom: 40, padding: 10}}>
                             <Text style={{fontWeight: '700', color: 'white', textAlign: 'center'}}>CLOSE</Text>
                         </TouchableOpacity>
                     </View>
@@ -60,7 +57,7 @@ export default function EarningsModal(props) {
     )
 }
 
-const styles = StyleSheet.create({
+const styles = theme => StyleSheet.create({
     bottomModal: {
     },
     modalBody: {

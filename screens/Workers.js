@@ -1,20 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Text, View, ActivityIndicator, RefreshControl, StyleSheet, ScrollView, TouchableOpacity, Modal, Image } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useTheme } from '@react-navigation/native';
+import { Text, View, RefreshControl, StyleSheet, ScrollView } from 'react-native';
 
-import { load_keys } from '../tools/fetches';
 import InitialStateCard from '../components/InitialStateCard';
 import WorkersCard from '../components/WorkersCard';
 import WorkersModal from '../components/WorkersModal';
+import ErrorView from '../components/ErrorView';
 
-export default function WorkersScreen() {
-
-    const { colors } = useTheme();
+export default function WorkersScreen(props) {
 
     const [loadText, setLoadText] = useState("");
 
-    let api_key;
     const [comp, setComp] = useState(null);
     const [refreshing, setRefreshing] = useState(false);
     const [initialState, setInitialState] = useState(true)
@@ -31,6 +26,8 @@ export default function WorkersScreen() {
 
     const call_endpoint = async (api_key) => {
         if (!api_key || api_key == undefined) {
+            setComp(<ErrorView error='Missing API key.' msg='Please enter your Prohashing API key in the Settings tab.' theme={props.theme} />)
+            setInitialState(false);
             return;
         }
 
@@ -38,16 +35,18 @@ export default function WorkersScreen() {
             setLoadText("...getting worker data...");
             const req = await fetch(`https://prohashing.com/api/v1/walletEx?apiKey=${api_key}`);
             let res = await req.json();
-            if (res.status == 'success') {
+            if (res.status && res.status == 'success') {
                 setNumWorkers(res.data.miners.length);
                 setComp(renderWorkers(res.data.miners))
-                setInitialState(false)
+            } else if (res.code && res.code == 400) {
+                setComp(<ErrorView error='Invalid API Key.' msg='Please verify you have entered the correct API key in the Settings tab.' theme={props.theme} />)
             } else {
-                throw Error('no response');
+                setComp(<ErrorView error='Generic Error.' msg='Please restart the app and try again.' theme={props.theme} />)
             }
         } catch (e) {
-            throw Error(e);
+            setComp(<ErrorView error='Error.' msg='Please make sure you have an active internet connection and try again.' theme={props.theme} />)
         }
+        setInitialState(false)
     }
 
     const convert_hashes = (hash_rate) => {
@@ -70,15 +69,15 @@ export default function WorkersScreen() {
         if (miners.length == 0) {
             return (
                 <View>
-                    <Text style={{paddingHorizontal: 20, fontWeight: '700', fontSize: 18, color: colors.text}}>No active workers.</Text>
-                    <Text style={{paddingHorizontal: 20, paddingTop: 20, fontWeight: '700', color: colors.text}}>Make sure you have entered a valid Prohashing API key in the Settings tab and that your miner(s) are connected and running.</Text>
+                    <Text style={{paddingHorizontal: 20, fontWeight: '700', fontSize: 18, color: props.theme.colors.text}}>No active workers.</Text>
+                    <Text style={{paddingHorizontal: 20, paddingTop: 20, fontWeight: '700', color: props.theme.colors.text}}>Make sure you have entered a valid Prohashing API key in the Settings tab and that your miner(s) are connected and running.</Text>
                 </View>
             )
         }
 
         return (
             miners.map((item, index) => (
-                <WorkersCard key={index} item={item} onOpenModal={() => loadItemToModal(item)} />
+                <WorkersCard key={index} item={item} onOpenModal={() => loadItemToModal(item)} theme={props.theme} />
             ))
         )
     }
@@ -113,68 +112,48 @@ export default function WorkersScreen() {
         setModalVisible(false);
     }
 
-    async function checkForUpdate() {
-        try {
-            const update = await Updates.checkForUpdateAsync();
-            if (update.isAvailable) {
-                await Updates.fetchUpdateAsync();
-                // ... notify user of update ...
-                Alert.alert(
-                    "New update available!",
-                    "The app will refresh to apply new changes.",
-                    [
-                        { text: "OK", onPress: async () => await Updates.reloadAsync() }
-                    ]
-                );
-            }
-        } catch (e) {
-        }
-    }
-
     async function run() {
         setRefreshing(true);
-        let obj = await load_keys()
-        await call_endpoint(obj.api_key)
+        await call_endpoint(props.apiKey)
         setRefreshing(false);
         setLoadText("");
     }
 
     useEffect(() => {
-        checkForUpdate();
         run()
-    }, [])
+    }, [props.apiKey])
 
     return (
-        <View style={{...styles.workersContainer, backgroundColor: colors.background}}>
+        <View style={{...styles(props.theme).workersContainer, backgroundColor: props.theme.colors.background}}>
 
-            <View style={styles.containerHeader}>
-                <Text style={{...styles.headerText, color: colors.title}}>WORKERS</Text>
-                <Text style={{...styles.headerSubtext, color: colors.subtitle}}>Connected: {numWorkers}</Text>
+            <View style={styles(props.theme).containerHeader}>
+                <Text style={{...styles(props.theme).headerText, color: props.theme.colors.title}}>WORKERS</Text>
+                <Text style={{...styles(props.theme).headerSubtext, color: props.theme.colors.subtitle}}>Connected: {numWorkers}</Text>
             </View>
 
-            <Text style={{fontSize: 12, color: colors.subtitle, textAlign: 'center', marginBottom: 5,}}>{loadText}</Text>
+            <Text style={{fontSize: 12, color: props.theme.colors.subtitle, textAlign: 'center', marginBottom: 5,}}>{loadText}</Text>
 
             { initialState && 
                 <View>
-                    <InitialStateCard index={1} />
-                    <InitialStateCard index={2} />
-                    <InitialStateCard index={3} />
+                    <InitialStateCard index={1} theme={props.theme} />
+                    <InitialStateCard index={2} theme={props.theme} />
+                    <InitialStateCard index={3} theme={props.theme} />
                 </View>
             }
 
             { !initialState && 
-                <ScrollView style={styles.workersList} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
+                <ScrollView style={styles(props.theme).workersList} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
                     <View>{comp}</View>
                 </ScrollView>
             }
 
-            <WorkersModal obj={modalObj} visible={modalVisible} onClearModal={clearModal} />
+            <WorkersModal obj={modalObj} visible={modalVisible} theme={props.theme} onClearModal={clearModal} />
 
         </View>
     );
 }
 
-const styles = StyleSheet.create({
+const styles = theme => StyleSheet.create({
     workersContainer: {
         display: 'flex',
         flex: 1,

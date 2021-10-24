@@ -1,10 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Animated, View, StyleSheet } from 'react-native';
-import { useTheme } from '@react-navigation/native';
 
 export default function InitialStateCard(props) {
-
-    const { colors } = useTheme();
 
     const animation = useRef(new Animated.Value(0)).current;
 
@@ -28,7 +25,7 @@ export default function InitialStateCard(props) {
 
     const boxInterpolation = animation.interpolate({
         inputRange: [0, 1],
-        outputRange: [colors.card, colors.cardAnimated]
+        outputRange: [props.theme.colors.card, props.theme.colors.cardAnimated]
     })
 
     const animatedStyle = {
@@ -41,12 +38,12 @@ export default function InitialStateCard(props) {
 
     return (
         <View>
-            <Animated.View style={{...styles.earningCard, ...animatedStyle}}></Animated.View>
+            <Animated.View style={{...styles(props.theme).earningCard, ...animatedStyle}}></Animated.View>
         </View>
     )
 }
 
-const styles = StyleSheet.create({
+const styles = theme => StyleSheet.create({
     earningCard: {
         padding: 39,
         margin: 20,

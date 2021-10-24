@@ -1,10 +1,8 @@
 import React from "react";
 import { StyleSheet, Modal, View, Text, TouchableOpacity } from 'react-native';
-import { useTheme } from '@react-navigation/native';
 
 export default function WorkersModal(props) {
 
-    const { colors } = useTheme();
 
     const clearModal = (e) => {
         props.onClearModal(e);
@@ -16,52 +14,52 @@ export default function WorkersModal(props) {
                 transparent={true}
                 visible={props.visible}
                 onRequestClose={() => { clearModal(); }}
-                style={styles.bottomModal}
+                style={styles(props.theme).bottomModal}
             >
-                <View style={{...styles.modalBody, backgroundColor: colors.modalBg}}>
+                <View style={{...styles(props.theme).modalBody, backgroundColor: props.theme.colors.modalBg}}>
                     <View style={{ flexGrow: 1, }}>
-                        <Text style={{...styles.modalTitle, color: colors.text}}>{props.obj.title}</Text>
+                        <Text style={{...styles(props.theme).modalTitle, color: props.theme.colors.text}}>{props.obj.title}</Text>
 
                         <View style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between'}}>
-                            <View style={styles.workerInfoDiv}>
-                                <Text style={{...styles.workerLabel, color: colors.subtitle}}>ALGORITHM</Text>
-                                <Text style={{...styles.workerValue, color: colors.text}}>{props.obj.algo}</Text>
+                            <View style={styles(props.theme).workerInfoDiv}>
+                                <Text style={{...styles(props.theme).workerLabel, color: props.theme.colors.subtitle}}>ALGORITHM</Text>
+                                <Text style={{...styles(props.theme).workerValue, color: props.theme.colors.text}}>{props.obj.algo}</Text>
                             </View>
                             
-                            <View style={styles.workerInfoDiv}>
-                                <Text style={{...styles.workerLabel, color: colors.subtitle}}>CURRENT COIN</Text> 
-                                <Text style={{...styles.workerValue, color: colors.text}}>{props.obj.coin}</Text>
+                            <View style={styles(props.theme).workerInfoDiv}>
+                                <Text style={{...styles(props.theme).workerLabel, color: props.theme.colors.subtitle}}>CURRENT COIN</Text> 
+                                <Text style={{...styles(props.theme).workerValue, color: props.theme.colors.text}}>{props.obj.coin}</Text>
                             </View>
 
-                            <View style={styles.workerInfoDiv}>
-                                <Text style={{...styles.workerLabel, color: colors.subtitle}}>HASHRATE</Text>
-                                <Text style={{...styles.workerValue, color: colors.text}}>{props.obj.hash}</Text>
+                            <View style={styles(props.theme).workerInfoDiv}>
+                                <Text style={{...styles(props.theme).workerLabel, color: props.theme.colors.subtitle}}>HASHRATE</Text>
+                                <Text style={{...styles(props.theme).workerValue, color: props.theme.colors.text}}>{props.obj.hash}</Text>
                             </View>
                         </View>
 
                         <View style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between', marginTop: 20,}}>
-                            <View style={styles.workerInfoDiv}>
-                                <Text style={{...styles.workerLabel, color: colors.subtitle}}>DIFFICULTY</Text>
-                                <Text style={{...styles.workerValue, color: colors.text}}>{props.obj.diff}</Text>
+                            <View style={styles(props.theme).workerInfoDiv}>
+                                <Text style={{...styles(props.theme).workerLabel, color: props.theme.colors.subtitle}}>DIFFICULTY</Text>
+                                <Text style={{...styles(props.theme).workerValue, color: props.theme.colors.text}}>{props.obj.diff}</Text>
                             </View>
 
-                            <View style={styles.workerInfoDiv}>
-                                <Text style={{...styles.workerLabel, color: colors.subtitle}}>MIN RESTART DELAY</Text>
-                                <Text style={{...styles.workerValue, color: colors.text}}>{props.obj.minRestart} seconds</Text>
+                            <View style={styles(props.theme).workerInfoDiv}>
+                                <Text style={{...styles(props.theme).workerLabel, color: props.theme.colors.subtitle}}>MIN RESTART DELAY</Text>
+                                <Text style={{...styles(props.theme).workerValue, color: props.theme.colors.text}}>{props.obj.minRestart} seconds</Text>
                             </View>
 
                             <View></View>
                         </View>
 
                         <View style={{marginTop: 20}}>
-                            <View style={styles.workerInfoDiv}>
-                                <Text style={{...styles.workerLabel, color: colors.subtitle}}>WORK RESTART PENALTY</Text>
-                                <Text style={{...styles.workerValue, color: colors.text}}>{props.obj.restartPenalty}</Text>
+                            <View style={styles(props.theme).workerInfoDiv}>
+                                <Text style={{...styles(props.theme).workerLabel, color: props.theme.colors.subtitle}}>WORK RESTART PENALTY</Text>
+                                <Text style={{...styles(props.theme).workerValue, color: props.theme.colors.text}}>{props.obj.restartPenalty}</Text>
                             </View>
                         </View>
                     </View>
                     <View style={{ marginBottom: 40, marginTop: 20 }}>
-                        <TouchableOpacity onPress={clearModal} style={{backgroundColor: colors.primary, padding: 10, borderRadius: 15,}}>
+                        <TouchableOpacity onPress={clearModal} style={{backgroundColor: props.theme.colors.primary, padding: 10, borderRadius: 15,}}>
                             <Text style={{color: 'white', textAlign: 'center', fontWeight: '700'}}>CLOSE</Text>
                         </TouchableOpacity>
                     </View>
@@ -71,7 +69,7 @@ export default function WorkersModal(props) {
     )
 }
 
-const styles = StyleSheet.create({
+const styles = theme => StyleSheet.create({
     bottomModal: {
     },
     modalBody: {

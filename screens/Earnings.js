@@ -1,34 +1,28 @@
 import React, { useEffect, useState } from 'react';
 import { RefreshControl, Text, View, StyleSheet, TouchableOpacity, ScrollView, Modal, Alert, Image } from 'react-native';
-import { useTheme } from '@react-navigation/native';
 
 import { coinList } from '../assets/coinlist';
 import { load_keys } from '../tools/fetches';
 import InitialStateCard from '../components/InitialStateCard';
 import EarningsCard from '../components/EarningsCard';
 import EarningsModal from '../components/EarningsModal';
+import ErrorView from '../components/ErrorView';
 
-import * as Updates from 'expo-updates';
 
-export default function EarningsScreen() {
-    let api_key;
+
+export default function EarningsScreen(props) {
+
     let current_earnings = 0;
     const sortCase = 'value';
     // const sortCase = 'balance';
-    
-    const [loadText, setLoadText] = useState("");
 
-    const { colors } = useTheme();
+    const [loadText, setLoadText] = useState("");
 
     const [initialState, setInitialState] = useState(true);
 
     const [comp, setComp] = useState(null);
     const [refreshing, setRefreshing] = React.useState(false);
-
-    const [currency, setCurrency] = useState('usd');
     const [totalValue, setTotalValue] = useState(0.00);
-
-    const [threshold, setThreshold] = useState(0.001);
 
     //modal states
     const [modalVisible, setModalVisible] = useState(false);
@@ -41,7 +35,8 @@ export default function EarningsScreen() {
 
     const call_endpoint = async (api_key, currency, threshold) => {
         if (!api_key || api_key == undefined) {
-            //TODO set Comp to an error state about no API key
+            setComp(<ErrorView error='Missing API key.' msg='Please enter your Prohashing API key in the Settings tab.' theme={props.theme} />)
+            setInitialState(false);
             return;
         }
 
@@ -49,15 +44,17 @@ export default function EarningsScreen() {
             setLoadText("...getting account data...");
             const req = await fetch(`https://prohashing.com/api/v1/wallet?apiKey=${api_key}`);
             let res = await req.json();
-            if (res.status == 'success') {
+            if (res.code == 200) {
                 setComp(await renderBalances(res.data.balances, currency, threshold))
-                setInitialState(false)
+            } else if (res.code == 400) {
+                setComp(<ErrorView error='Invalid API Key.' msg='Please verify you have entered the correct API key in the Settings tab.' theme={props.theme} />)
             } else {
-                throw Error('no response');
+                setComp(<ErrorView error='Generic Error.' msg='Please restart the app and try again.' theme={props.theme} />)
             }
         } catch (e) {
-            throw Error(e)
+            setComp(<ErrorView error='Error.' msg='Please make sure you have an active internet connection and try again.' theme={props.theme} />)
         }
+        setInitialState(false)
     }
 
     const loadItemToModal = (item) => {
@@ -102,8 +99,8 @@ export default function EarningsScreen() {
         if (Object.entries(balances).length == 0) {
             return (
                 <View>
-                    <Text style={{paddingHorizontal: 20, fontWeight: '700', fontSize: 18, color: colors.text}}>No current balance.</Text>
-                    <Text style={{paddingHorizontal: 20, paddingTop: 20, fontWeight: '700', color: colors.text}}>Make sure you have entered a valid Prohashing API key in the Settings tab and that your miner(s) are connected and running.</Text>
+                    <Text style={{paddingHorizontal: 20, fontWeight: '700', fontSize: 18, color: theme.colors.text}}>No current balance.</Text>
+                    <Text style={{paddingHorizontal: 20, paddingTop: 20, fontWeight: '700', color: theme.colors.text}}>Make sure you have entered a valid Prohashing API key in the Settings tab and that your miner(s) are connected and running.</Text>
                 </View>
             )
         }
@@ -130,13 +127,21 @@ export default function EarningsScreen() {
             }
         });
 
-        let filtered = sortable.filter((item) => item[1].value >= threshold);
+        let filtered = sortable.filter((item) => item[1].value >= +threshold);
 
-        return (
-            filtered.map((item, index) => (
-                <EarningsCard key={index} item={item} currency={currency} onOpenModal={() => loadItemToModal(item)} />
-            ))
-        )
+        if (filtered.length > 0) {
+            return (
+                filtered.map((item, index) => (
+                    <EarningsCard key={index} item={item} currency={currency} theme={props.theme} onOpenModal={() => loadItemToModal(item)} />
+                ))
+            )
+        } else {
+            if (sortable.length > 0) {
+                return (<ErrorView error={'Small balances hidden'} msg={'All of your current coin balances are below your threshold. Decrease your threshold in the Settings tab to see more.'} theme={props.theme} />)
+            } else {
+                return (<ErrorView error={'No balances'} msg={'You have no current balance. Start mining coins to earn.'} theme={props.theme} />)
+            }
+        }
     }
 
     const get_value = async (symbol, balance, currency) => {
@@ -163,75 +168,54 @@ export default function EarningsScreen() {
         return amt;
     }
 
-    async function checkForUpdate() {
-        try {
-            const update = await Updates.checkForUpdateAsync();
-            if (update.isAvailable) {
-                await Updates.fetchUpdateAsync();
-                // ... notify user of update ...
-                Alert.alert(
-                    "New update available!",
-                    "The app will refresh to apply new changes.",
-                    [
-                        { text: "OK", onPress: async () => await Updates.reloadAsync() }
-                    ]
-                );
-            }
-        } catch (e) {
-        }
-    }
-
     async function run() {
         setRefreshing(true)
-        let obj = await load_keys()
-        setCurrency(obj.currency);
-        setThreshold(obj.threshold);
-        await call_endpoint(obj.api_key, obj.currency, obj.threshold)
+        await call_endpoint(props.apiKey, props.currency, props.threshold)
         setRefreshing(false)
         setLoadText("");
     }
 
     useEffect(() => {
-        checkForUpdate();
         run();
-    }, [])
+    }, [props.apiKey, props.threshold, props.currency]);
 
     return (
-        <View style={{...styles.earningsContainer, backgroundColor: colors.background }}>
+        <View style={styles(props.theme).earningsContainer}>
 
-            <View style={styles.containerHeader}>
-                <Text style={{...styles.headerText, color: colors.title}}>EARNINGS</Text>
-                <Text style={{...styles.headerSubtext, color: colors.subtitle}}>Current Value: {totalValue.toFixed(2)} {currency.toUpperCase()}</Text>
+            <View style={styles(props.theme).containerHeader}>
+                <Text style={styles(props.theme).headerText}>EARNINGS</Text>
+                <Text style={styles(props.theme).headerSubtext}>Current Value: {totalValue.toFixed(2)} {props.currency.toUpperCase()}</Text>
             </View>
 
-            <Text style={{fontSize: 12, color: colors.subtitle, textAlign: 'center', marginBottom: 5,}}>{loadText}</Text>
+            <Text style={styles(props.theme).loadText}>{loadText}</Text>
 
             { initialState && 
                 <View>
-                    <InitialStateCard index={1} />
-                    <InitialStateCard index={2} />
-                    <InitialStateCard index={3} />
+                    <InitialStateCard index={1} theme={props.theme} />
+                    <InitialStateCard index={2} theme={props.theme} />
+                    <InitialStateCard index={3} theme={props.theme} />
                 </View>
             }
 
             { !initialState && 
-                <ScrollView style={styles.earningsList} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
+                <ScrollView style={styles(props.theme).earningsList} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
                         <View>{comp}</View>
                 </ScrollView>
             }
             
-            <EarningsModal obj={modalObj} visible={modalVisible} onClearModal={clearEarningsModal} />
+            <EarningsModal obj={modalObj} visible={modalVisible} onClearModal={clearEarningsModal} theme={props.theme} />
             
         </View>
     );
 }
 
-const styles = StyleSheet.create({
+const styles = theme => StyleSheet.create({
     earningsContainer: {
         display: 'flex',
         flexDirection: 'column',
         flex: 1,
         width: '100%',
+        backgroundColor: theme.colors.background,
     },
     containerHeader: {
         marginHorizontal: 23, 
@@ -241,10 +225,18 @@ const styles = StyleSheet.create({
     headerText: {
         fontSize: 32,
         fontWeight: '700',
+        color: theme.colors.title,
     },
     headerSubtext: {
         fontSize: 16,
         fontWeight: '700',
+        color: theme.colors.subtitle,
+    },
+    loadText: {
+        fontSize: 12, 
+        color: theme.colors.subtitle, 
+        textAlign: 'center', 
+        marginBottom: 5,
     },
     earningsList: {
     },
