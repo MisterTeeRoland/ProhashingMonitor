@@ -9,6 +9,9 @@ export default function EarningsCard(props) {
     const openModal = (e) => {
         props.onOpenModal(e);
     }
+
+    const coin = props.item[1];
+    const value = coin.value.toFixed(2);
     
     return (
         <View>
@@ -17,11 +20,12 @@ export default function EarningsCard(props) {
                     <Image style={styles(props.theme).earningIcon} source={{ uri: source }} />
                 </View>
                 <View style={{ flexGrow: 1 }}>
-                    <Text style={{ ...styles(props.theme).earningTitle, color: props.theme.colors.text }}>{props.item[1].name}</Text>
-                    <Text style={{ ...styles(props.theme).earningBalance, color: props.theme.colors.text }}>{props.item[1].balance.toFixed(8)} {props.item[1].abbreviation}</Text>
+                    <Text numberOfLines={1} style={{ ...styles(props.theme).earningTitle, color: props.theme.colors.text }}>{coin.name}</Text>
+                    <Text style={{ ...styles(props.theme).earningBalance, color: props.theme.colors.text }}>{coin.balance.toFixed(8)} {coin.abbreviation}</Text>
                 </View>
-                <View style={styles(props.theme).earningValue}>
-                    <Text style={{ ...styles(props.theme).earningAmount, color: props.theme.colors.text }}>{props.item[1].value.toFixed(2)} {props.currency.toUpperCase()}</Text>
+                <View style={{...styles(props.theme).earningValue}}>
+                    <Text style={{ ...styles(props.theme).earningAmount, color: props.theme.colors.text }}>{value}</Text>
+                    <Text style={{...styles(props.theme).earningAmount, color: props.theme.colors.text}}>{props.currency.toUpperCase()}</Text>
                 </View>
 
             </TouchableOpacity>
@@ -50,9 +54,10 @@ const styles = theme => StyleSheet.create({
     earningTitle: {
         fontWeight: '700',
         fontSize: 18,
+        flex: 1,
     },
     earningValue: {
-        paddingTop: 11,
+        paddingTop: 0,
         paddingEnd: 10,
     },
     earningBalance: {
@@ -60,5 +65,6 @@ const styles = theme => StyleSheet.create({
     },
     earningAmount: {
         fontSize: 16,
+        textAlign: 'right',
     }
 })

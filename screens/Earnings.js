@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { RefreshControl, Text, View, StyleSheet, TouchableOpacity, ScrollView, Modal, Alert, Image } from 'react-native';
 
 import { coinList } from '../assets/coinlist';
-import { load_keys } from '../tools/fetches';
+import { load_keys, get_balances, get_values } from '../tools/fetches';
 import InitialStateCard from '../components/InitialStateCard';
 import EarningsCard from '../components/EarningsCard';
 import EarningsModal from '../components/EarningsModal';
@@ -14,7 +14,8 @@ export default function EarningsScreen(props) {
 
     let current_earnings = 0;
     const sortCase = 'value';
-    // const sortCase = 'balance';
+
+    let running = false;
 
     const [loadText, setLoadText] = useState("");
 
@@ -34,26 +35,23 @@ export default function EarningsScreen(props) {
     }, []);
 
     const call_endpoint = async (api_key, currency, threshold) => {
+
+        running = true;
+
         if (!api_key || api_key == undefined) {
             setComp(<ErrorView error='Missing API key.' msg='Please enter your Prohashing API key in the Settings tab.' theme={props.theme} />)
             setInitialState(false);
             return;
         }
 
-        try {
-            setLoadText("...getting account data...");
-            const req = await fetch(`https://prohashing.com/api/v1/wallet?apiKey=${api_key}`);
-            let res = await req.json();
-            if (res.code == 200) {
-                setComp(await renderBalances(res.data.balances, currency, threshold))
-            } else if (res.code == 400) {
-                setComp(<ErrorView error='Invalid API Key.' msg='Please verify you have entered the correct API key in the Settings tab.' theme={props.theme} />)
-            } else {
-                setComp(<ErrorView error='Generic Error.' msg='Please restart the app and try again.' theme={props.theme} />)
-            }
-        } catch (e) {
-            setComp(<ErrorView error='Error.' msg='Please make sure you have an active internet connection and try again.' theme={props.theme} />)
+        setLoadText("...getting account data...");
+        const result = await get_balances(api_key);
+        if (result.status === 'success') {
+            setComp(await renderBalances(result.data.balances, currency, threshold))
+        } else {
+            setComp(<ErrorView error={result.err.title} msg={result.err.msg} theme={props.theme} />)
         }
+
         setInitialState(false)
     }
 
@@ -109,27 +107,45 @@ export default function EarningsScreen(props) {
 
         current_earnings = 0;
 
-        for (var coin in balances) {
-            let value = await get_value(balances[coin].abbreviation, balances[coin].balance, currency)
-            current_earnings += value;
-            balances[coin].value = value;
-            sortable.push([coin, balances[coin]]);
-        }
-
-        setTotalValue(current_earnings);
-
-        //for now, sort by coin balance
-        sortable.sort(function(a, b) {
-            if (sortCase == "balance") {
-                return b[1].balance - a[1].balance;
-            } else if (sortCase == "value") {
-                return b[1].value - a[1].value;
+        let ids = [];
+        Object.entries(balances).forEach(coin => {
+            let obj = coinList.find(o => o.symbol === coin[1].abbreviation.toLowerCase());
+            if (obj) {
+                balances[coin[0]].identifier = obj.id;
+                ids.push(obj.id)
+            } else {
+                balances[coin[0]].identifier = null;
             }
         });
 
-        let filtered = sortable.filter((item) => item[1].value >= +threshold);
+        //filter out empty indexes
+        ids = ids.filter(n => n);
 
+        const value_result = await get_values(ids.join(','), currency);
+
+        //go through each coin and map its price, then calc the current balance + update current earnings
+        Object.entries(balances).forEach(coin => {
+            if (coin[1].identifier) {
+                let val = (coin[1].balance * value_result[coin[1].identifier][currency])
+                balances[coin[0]].value = val;
+                current_earnings += val;
+                sortable.push([
+                    balances[coin[1]], 
+                    balances[coin[0]]
+                ])
+            }
+        });
+
+        setTotalValue(current_earnings)
+
+        //for now, sort by coin balance
+        sortable.sort(function(a, b) {
+            return b[1].value - a[1].value;
+        });
+
+        let filtered = sortable.filter((item) => item[1].value >= +threshold);
         if (filtered.length > 0) {
+            running = false;
             return (
                 filtered.map((item, index) => (
                     <EarningsCard key={index} item={item} currency={currency} theme={props.theme} onOpenModal={() => loadItemToModal(item)} />
@@ -144,39 +160,19 @@ export default function EarningsScreen(props) {
         }
     }
 
-    const get_value = async (symbol, balance, currency) => {
-
-        let amt = 0;
-        let obj = coinList.find(o => o.symbol === symbol.toLowerCase());
-
-        if (obj) {
-
-            //TODO: you can comma separate all objects and get the whole thing in one call :eyes:
-            const req = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${obj.id}&vs_currencies=${currency}`);
-            const res = await req.json();
-            
-            //todo: this is only expecting one coin response. need to refactor for multiple
-            if (Object.entries(res).length > 0) {
-                for (const [coin, value] of Object.entries(res)) {
-                    return value[currency] * balance;
-                }
-            } else {
-                console.log('no coingecko response for '+obj.id);
-            }
-        } 
-
-        return amt;
-    }
-
     async function run() {
-        setRefreshing(true)
         await call_endpoint(props.apiKey, props.currency, props.threshold)
-        setRefreshing(false)
         setLoadText("");
     }
 
     useEffect(() => {
         run();
+        const interval = setInterval(() => {
+            if (!running) {
+                run();
+            }
+        }, 15000);
+        return () => clearInterval(interval);
     }, [props.apiKey, props.threshold, props.currency]);
 
     return (
