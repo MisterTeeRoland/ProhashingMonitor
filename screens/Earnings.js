@@ -79,7 +79,7 @@ export default function EarningsScreen(props) {
 
   const loadItemToModal = (item) => {
     const abbv = item[1].abbreviation.toLowerCase();
-    const source = `https://cryptoicon-api.vercel.app/api/icon/${abbv}`;
+    const source = `https://raw.githubusercontent.com/jsupa/crypto-icons/main/icons/${abbv}.png`;
 
     setModalObj({
       title: item[1].name,
@@ -90,13 +90,14 @@ export default function EarningsScreen(props) {
       eligiblePayout: item[1].unpaid,
       threshold: item[1].payoutThreshold,
       earnings: item[1].value,
+      currency: props.currency,
+      rate: item[1].rate,
     });
 
     panelRef.current.togglePanel();
   };
 
   const clearEarningsModal = () => {
-    console.log("clearEarningsModal");
     setModalObj({
       title: "",
       image: "",
@@ -169,6 +170,7 @@ export default function EarningsScreen(props) {
       if (coin[1].identifier) {
         let val = coin[1].balance * value_result[coin[1].identifier][currency];
         balances[coin[0]].value = val;
+        balances[coin[0]].rate = value_result[coin[1].identifier][currency];
         current_earnings += val;
         sortable.push([balances[coin[1]], balances[coin[0]]]);
       }
@@ -223,12 +225,12 @@ export default function EarningsScreen(props) {
 
   useEffect(() => {
     run();
-    const interval = setInterval(() => {
-      if (!running) {
-        run();
-      }
-    }, 15000);
-    return () => clearInterval(interval);
+    // const interval = setInterval(() => {
+    //   if (!running) {
+    //     run();
+    //   }
+    // }, 15000);
+    // return () => clearInterval(interval);
   }, [props.apiKey, props.threshold, props.currency]);
 
   return (

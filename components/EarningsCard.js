@@ -3,7 +3,7 @@ import { Text, View, StyleSheet, Image, TouchableOpacity } from "react-native";
 
 export default function EarningsCard(props) {
   const abbv = props.item[1].abbreviation.toLowerCase();
-  const source = `https://cryptoicon-api.vercel.app/api/icon/${abbv}`;
+  const source = `https://raw.githubusercontent.com/jsupa/crypto-icons/main/icons/${abbv}.png`;
 
   const openModal = (e) => {
     props.onOpenModal(e);

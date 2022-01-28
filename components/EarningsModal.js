@@ -19,7 +19,7 @@ export default function EarningsModal(props) {
         <View
           style={{
             flexDirection: "row",
-            justifyContent: "center",
+            justifyContent: "flex-start",
             width: "100%",
             alignContent: "center",
           }}
@@ -30,15 +30,33 @@ export default function EarningsModal(props) {
               source={{ uri: props.obj.image }}
             />
           )}
+
+          <View
+            style={{
+              flexDirection: "column",
+              alignItems: "flex-start",
+              paddingLeft: 10,
+            }}
+          >
+            <Text
+              style={{
+                ...styles(props.theme).modalTitle,
+                color: props.theme.colors.text,
+              }}
+            >
+              {props.obj.title}
+            </Text>
+
+            <Text
+              style={{
+                ...styles(props.theme).modalSubtitle,
+                color: props.theme.colors.text,
+              }}
+            >
+              {props.obj.balance} {props.obj.abbv}
+            </Text>
+          </View>
         </View>
-        <Text
-          style={{
-            ...styles(props.theme).modalTitle,
-            color: props.theme.colors.text,
-          }}
-        >
-          {props.obj.title}
-        </Text>
 
         <View style={styles(props.theme).modalInfoDiv}>
           <Text
@@ -57,24 +75,15 @@ export default function EarningsModal(props) {
           >
             ${props.obj.earnings}
           </Text>
-        </View>
-
-        <View style={styles(props.theme).modalInfoDiv}>
-          <Text
-            style={{
-              ...styles(props.theme).modalLabel,
-              color: props.theme.colors.subtitle,
-            }}
-          >
-            CURRENT BALANCE
-          </Text>
           <Text
             style={{
               ...styles(props.theme).modalValue,
               color: props.theme.colors.text,
+              fontSize: 11,
             }}
           >
-            {props.obj.balance} {props.obj.abbv}
+            1 {props.obj?.currency?.toUpperCase() ?? ""} = ${props.obj.rate}{" "}
+            {props.obj.abbv}
           </Text>
         </View>
 
@@ -180,9 +189,9 @@ const styles = (theme) =>
     modalTitle: {
       fontSize: 24,
       fontWeight: "700",
-      textAlign: "center",
-      marginTop: 15,
-      marginBottom: 40,
+    },
+    modalSubtitle: {
+      marginBottom: 30,
     },
     modalInfoDiv: {
       marginBottom: 20,
