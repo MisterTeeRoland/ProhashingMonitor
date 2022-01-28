@@ -106,5 +106,6 @@ const styles = (theme) =>
     earningCurrency: {
       fontSize: 12,
       textAlign: "right",
+      fontWeight: "700",
     },
   });

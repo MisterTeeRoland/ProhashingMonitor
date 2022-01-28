@@ -58,7 +58,7 @@ const styles = (theme) =>
     workerCard: {
       padding: 15,
       margin: 20,
-      marginTop: 0,
+      marginTop: 10,
       borderRadius: 15,
       shadowColor: "#000",
       elevation: 10,

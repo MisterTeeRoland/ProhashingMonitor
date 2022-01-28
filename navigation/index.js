@@ -21,8 +21,8 @@ export default function Navigation() {
   const [loaded, setLoaded] = useState(false);
 
   const changeSettings = (e) => {
-    console.log("settings changed");
-    console.log(e);
+    // console.log("settings changed");
+    // console.log(e);
     setApiKey(e.api_key);
     setCurrency(e.currency);
     setThreshold(e.threshold);
@@ -32,8 +32,8 @@ export default function Navigation() {
   useEffect(() => {
     const load_settings = async () => {
       let obj = await load_keys();
-      console.log("---navigation---");
-      console.log(obj);
+      // console.log("---navigation---");
+      // console.log(obj);
       setApiKey(obj.api_key);
       setCurrency(obj.currency);
       setThreshold(obj.threshold);
