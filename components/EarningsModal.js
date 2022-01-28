@@ -1,5 +1,6 @@
 import React, { useRef } from "react";
 import { StyleSheet, View, Text, Image, TouchableOpacity } from "react-native";
+import { backgroundColor } from "react-native/Libraries/Components/View/ReactNativeStyleAttributes";
 
 export default function EarningsModal(props) {
   const clearModal = (e) => {
@@ -22,17 +23,22 @@ export default function EarningsModal(props) {
             justifyContent: "flex-start",
             width: "100%",
             alignContent: "center",
+            borderBottomWidth: 1,
+            borderBottomColor: "#656b78",
+            marginBottom: 20,
+            paddingBottom: 20,
           }}
         >
           {props.obj.image !== "" && (
             <Image
-              style={styles(props.theme).modalImage}
+              style={{ ...styles(props.theme).modalImage, alignSelf: "center" }}
               source={{ uri: props.obj.image }}
             />
           )}
 
           <View
             style={{
+              alignSelf: "center",
               flexDirection: "column",
               alignItems: "flex-start",
               paddingLeft: 10,
@@ -65,26 +71,30 @@ export default function EarningsModal(props) {
               color: props.theme.colors.subtitle,
             }}
           >
-            CURRENT VALUE
+            CURRENT{"\n"}VALUE
           </Text>
-          <Text
-            style={{
-              ...styles(props.theme).modalValue,
-              color: props.theme.colors.text,
-            }}
-          >
-            ${props.obj.earnings}
-          </Text>
-          <Text
-            style={{
-              ...styles(props.theme).modalValue,
-              color: props.theme.colors.text,
-              fontSize: 11,
-            }}
-          >
-            1 {props.obj?.currency?.toUpperCase() ?? ""} = ${props.obj.rate}{" "}
-            {props.obj.abbv}
-          </Text>
+          <View>
+            <Text
+              style={{
+                ...styles(props.theme).modalValue,
+                color: props.theme.colors.text,
+                textAlign: "right",
+              }}
+            >
+              ${props.obj.earnings}
+            </Text>
+            <Text
+              style={{
+                ...styles(props.theme).modalValue,
+                color: props.theme.colors.text,
+                fontSize: 11,
+                textAlign: "right",
+              }}
+            >
+              1 {props.obj?.currency?.toUpperCase() ?? ""} = ${props.obj.rate}{" "}
+              {props.obj.abbv}
+            </Text>
+          </View>
         </View>
 
         <View style={styles(props.theme).modalInfoDiv}>
@@ -94,16 +104,28 @@ export default function EarningsModal(props) {
               color: props.theme.colors.subtitle,
             }}
           >
-            PAID OUT IN LAST 24 HOURS
+            PAID OUT IN{"\n"}LAST 24 HOURS
           </Text>
-          <Text
-            style={{
-              ...styles(props.theme).modalValue,
-              color: props.theme.colors.text,
-            }}
-          >
-            {props.obj.earnings24} {props.obj.abbv}
-          </Text>
+          <View>
+            <Text
+              style={{
+                ...styles(props.theme).modalValue,
+                color: props.theme.colors.text,
+              }}
+            >
+              {props.obj.earnings24}
+            </Text>
+            <Text
+              style={{
+                color: props.theme.colors.subtitle,
+                textAlign: "right",
+                fontSize: 11,
+                fontWeight: "700",
+              }}
+            >
+              {props.obj.abbv}
+            </Text>
+          </View>
         </View>
 
         <View style={styles(props.theme).modalInfoDiv}>
@@ -113,35 +135,66 @@ export default function EarningsModal(props) {
               color: props.theme.colors.subtitle,
             }}
           >
-            ELIGIBLE FOR PAYOUT
+            ELIGIBLE{"\n"}FOR PAYOUT
           </Text>
-          <Text
-            style={{
-              ...styles(props.theme).modalValue,
-              color: props.theme.colors.text,
-            }}
-          >
-            {props.obj.eligiblePayout} {props.obj.abbv}
-          </Text>
+          <View>
+            <Text
+              style={{
+                ...styles(props.theme).modalValue,
+                color: props.theme.colors.text,
+              }}
+            >
+              {props.obj.eligiblePayout}
+            </Text>
+
+            <Text
+              style={{
+                color: props.theme.colors.subtitle,
+                textAlign: "right",
+                fontSize: 11,
+                fontWeight: "700",
+              }}
+            >
+              {props.obj.abbv}
+            </Text>
+          </View>
         </View>
 
-        <View style={styles(props.theme).modalInfoDiv}>
+        <View
+          style={{
+            ...styles(props.theme).modalInfoDiv,
+          }}
+        >
           <Text
             style={{
               ...styles(props.theme).modalLabel,
               color: props.theme.colors.subtitle,
             }}
           >
-            ON-CHAIN PAYOUT THRESHOLD
+            ON-CHAIN
+            {"\n"}PAYOUT THRESHOLD
           </Text>
-          <Text
-            style={{
-              ...styles(props.theme).modalValue,
-              color: props.theme.colors.text,
-            }}
-          >
-            {props.obj.threshold} {props.obj.abbv}
-          </Text>
+          <View>
+            <Text
+              style={{
+                ...styles(props.theme).modalValue,
+                color: props.theme.colors.text,
+              }}
+            >
+              {props.obj.threshold}
+            </Text>
+
+            <Text
+              style={{
+                color: props.theme.colors.subtitle,
+                textAlign: "right",
+                fontSize: 11,
+                fontWeight: "700",
+              }}
+            >
+              {props.obj.abbv}
+            </Text>
+          </View>
         </View>
       </View>
       <View>
@@ -190,18 +243,21 @@ const styles = (theme) =>
       fontSize: 24,
       fontWeight: "700",
     },
-    modalSubtitle: {
-      marginBottom: 30,
-    },
+    modalSubtitle: {},
     modalInfoDiv: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignContent: "center",
       marginBottom: 20,
     },
     modalLabel: {
       fontWeight: "700",
       fontSize: 12,
+      alignSelf: "center",
     },
     modalValue: {
-      fontSize: 18,
+      textAlign: "right",
+      fontSize: 16,
       fontWeight: "700",
     },
   });

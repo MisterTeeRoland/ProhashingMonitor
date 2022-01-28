@@ -77,8 +77,8 @@ const styles = (theme) =>
   StyleSheet.create({
     earningCard: {
       padding: 15,
-      margin: 20,
-      marginTop: 0,
+      marginHorizontal: 20,
+      marginVertical: 10,
       borderRadius: 15,
       shadowColor: "#fff",
       elevation: 10,
