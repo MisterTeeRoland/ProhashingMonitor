@@ -24,10 +24,12 @@ export default function EarningsModal(props) {
             alignContent: "center",
           }}
         >
-          <Image
-            style={styles(props.theme).modalImage}
-            source={{ uri: props.obj.image }}
-          />
+          {props.obj.image !== "" && (
+            <Image
+              style={styles(props.theme).modalImage}
+              source={{ uri: props.obj.image }}
+            />
+          )}
         </View>
         <Text
           style={{

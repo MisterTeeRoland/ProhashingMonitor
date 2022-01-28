@@ -96,6 +96,7 @@ export default function EarningsScreen(props) {
   };
 
   const clearEarningsModal = () => {
+    console.log("clearEarningsModal");
     setModalObj({
       title: "",
       image: "",

@@ -32,7 +32,8 @@ export default function EarningsCard(props) {
             numberOfLines={1}
             style={{
               ...styles(props.theme).earningTitle,
-              color: props.theme.colors.text,
+              // color: props.theme.colors.text,
+              color: "#fff",
             }}
           >
             {coin.name}
@@ -40,7 +41,8 @@ export default function EarningsCard(props) {
           <Text
             style={{
               ...styles(props.theme).earningBalance,
-              color: props.theme.colors.text,
+              // color: props.theme.colors.text,
+              color: "#fff",
             }}
           >
             {coin.balance.toFixed(8)} {coin.abbreviation}
@@ -50,7 +52,8 @@ export default function EarningsCard(props) {
           <Text
             style={{
               ...styles(props.theme).earningAmount,
-              color: props.theme.colors.text,
+              // color: props.theme.colors.text,
+              color: "#fff",
             }}
           >
             {value}
@@ -58,7 +61,8 @@ export default function EarningsCard(props) {
           <Text
             style={{
               ...styles(props.theme).earningCurrency,
-              color: props.theme.colors.text,
+              // color: props.theme.colors.text,
+              color: "#fff",
             }}
           >
             {props.currency.toUpperCase()}
