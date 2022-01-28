@@ -184,16 +184,41 @@ export default function SettingsScreen(props) {
         </View>
 
         <View>
-          <View style={styles(props.theme).settingsDiv}>
-            <Text style={styles(props.theme).settingsLabel}>
-              Prohashing API key{" "}
-              <MaterialCommunityIcons
-                name="account-question"
-                color={props.theme.colors.text}
-                size={20}
-                onPress={showAPIDirections}
-              />
-            </Text>
+          <View
+            style={{
+              ...styles(props.theme).settingsDiv,
+              display: "flex",
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignContent: "center",
+            }}
+          >
+            <View>
+              <Text
+                style={{
+                  ...styles(props.theme).settingsLabel,
+                  textAlign: "left",
+                  width: "100%",
+                }}
+              >
+                Prohashing
+              </Text>
+              <Text
+                style={{
+                  ...styles(props.theme).settingsLabel,
+                  textAlign: "left",
+                  width: "100%",
+                }}
+              >
+                API key:{" "}
+                <MaterialCommunityIcons
+                  name="account-question"
+                  color={props.theme.colors.text}
+                  size={20}
+                  onPress={showAPIDirections}
+                />
+              </Text>
+            </View>
             <TextInput
               style={styles(props.theme).settingsInput}
               onChangeText={(text) => updateKey(text)}
@@ -201,9 +226,17 @@ export default function SettingsScreen(props) {
             />
           </View>
 
-          <View style={styles(props.theme).settingsDiv}>
+          <View
+            style={{
+              ...styles(props.theme).settingsDiv,
+              display: "flex",
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignContent: "center",
+            }}
+          >
             <Text style={styles(props.theme).settingsLabel}>
-              Default Currency
+              Default Currency:
             </Text>
             <View
               style={{
@@ -221,10 +254,43 @@ export default function SettingsScreen(props) {
             </View>
           </View>
 
-          <View style={styles(props.theme).settingsDiv}>
-            <Text style={styles(props.theme).settingsLabel}>
-              Hide small balances under:
-            </Text>
+          <View
+            style={{
+              ...styles(props.theme).settingsDiv,
+              display: "flex",
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignContent: "center",
+            }}
+          >
+            <View
+              style={{
+                flex: 1,
+                flexDirection: "column",
+                justifyContent: "flex-start",
+                alignItems: "flex-start",
+              }}
+            >
+              <Text
+                style={{
+                  ...styles(props.theme).settingsLabel,
+                  textAlign: "left",
+                  width: "100%",
+                }}
+              >
+                Hide small
+              </Text>
+              <Text
+                style={{
+                  ...styles(props.theme).settingsLabel,
+                  textAlign: "left",
+                  width: "100%",
+                }}
+              >
+                balances under:
+              </Text>
+            </View>
+
             <TextInput
               style={styles(props.theme).settingsInput}
               keyboardType="numeric"
@@ -239,6 +305,7 @@ export default function SettingsScreen(props) {
               display: "flex",
               flexDirection: "row",
               justifyContent: "space-between",
+              alignContent: "center",
             }}
           >
             <Text style={styles(props.theme).settingsLabel}>Dark Mode</Text>
@@ -306,6 +373,7 @@ const styles = (theme) =>
       fontWeight: "700",
       fontSize: 18,
       textAlign: "left",
+      alignSelf: "center",
     },
     settingsInput: {
       height: 40,
@@ -317,6 +385,7 @@ const styles = (theme) =>
       color: theme.colors.inputColor,
       borderColor: "transparent",
       elevation: 3,
+      width: 125,
     },
     successButton: {
       backgroundColor: theme.colors.primary,
