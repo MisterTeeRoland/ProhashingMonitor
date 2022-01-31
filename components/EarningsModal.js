@@ -25,7 +25,7 @@ export default function EarningsModal(props) {
             alignContent: "center",
             borderBottomWidth: 1,
             borderBottomColor: "#656b78",
-            marginBottom: 20,
+            marginBottom: 10,
             paddingBottom: 20,
           }}
         >
@@ -248,7 +248,10 @@ const styles = (theme) =>
       flexDirection: "row",
       justifyContent: "space-between",
       alignContent: "center",
-      marginBottom: 20,
+      marginBottom: 10,
+      paddingBottom: 10,
+      borderBottomWidth: 1,
+      borderBottomColor: "#656b78",
     },
     modalLabel: {
       fontWeight: "700",

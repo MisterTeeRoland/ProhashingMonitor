@@ -39,13 +39,15 @@ export default function WorkersCard(props) {
       onPress={() => openModal()}
     >
       <View style={{ flexGrow: 1 }}>
-        <Text style={styles(props.theme).workerTitle}>{props.item.ID}</Text>
-        <Text style={styles(props.theme).workerDetails}>
+        <Text style={{ ...styles(props.theme).workerTitle, color: "#fff" }}>
+          {props.item.ID}
+        </Text>
+        <Text style={{ ...styles(props.theme).workerDetails, color: "#fff" }}>
           {props.item.algo} - {props.item.coin}
         </Text>
       </View>
       <View style={styles(props.theme).hashValue}>
-        <Text style={styles(props.theme).workerHash}>
+        <Text style={{ ...styles(props.theme).workerHash, color: "#fff" }}>
           {convert_hashes(props.item.accepted)}
         </Text>
       </View>

@@ -3,8 +3,8 @@ export const lightTheme = {
   colors: {
     primary: "#5dd9df",
     secondary: "#99c7c8",
-    tertiary: "#fea8bd",
-    inputBg: "#eee",
+    tertiary: "#917cff",
+    inputBg: "#f5f5f5",
     inputColor: "#000",
     background: "#fff",
     card: "#645ec9",

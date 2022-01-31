@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Text,
   View,
+  Dimensions,
   RefreshControl,
   StyleSheet,
   ScrollView,
@@ -11,6 +12,7 @@ import InitialStateCard from "../components/InitialStateCard";
 import WorkersCard from "../components/WorkersCard";
 import WorkersModal from "../components/WorkersModal";
 import ErrorView from "../components/ErrorView";
+import BottomSheet from "react-native-simple-bottom-sheet";
 
 export default function WorkersScreen(props) {
   const [loadText, setLoadText] = useState("");
@@ -23,6 +25,8 @@ export default function WorkersScreen(props) {
   const [modalObj, setModalObj] = useState({});
 
   const [numWorkers, setNumWorkers] = useState(0);
+
+  const panelRef = useRef(null);
 
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
@@ -157,7 +161,7 @@ export default function WorkersScreen(props) {
       workRestartPenalty: item.workRestartPenalty,
     });
 
-    setModalVisible(true);
+    panelRef.current.togglePanel();
   };
 
   const clearModal = () => {
@@ -171,7 +175,7 @@ export default function WorkersScreen(props) {
       workRestartPenalty: 0,
     });
 
-    setModalVisible(false);
+    panelRef.current.togglePanel();
   };
 
   async function run() {
@@ -186,68 +190,82 @@ export default function WorkersScreen(props) {
   }, [props.apiKey]);
 
   return (
-    <View
-      style={{
-        ...styles(props.theme).workersContainer,
-        backgroundColor: props.theme.colors.background,
-      }}
-    >
-      <View style={styles(props.theme).containerHeader}>
-        <Text
-          style={{
-            ...styles(props.theme).headerText,
-            color: props.theme.colors.title,
-          }}
-        >
-          WORKERS
-        </Text>
-        <Text
-          style={{
-            ...styles(props.theme).headerSubtext,
-            color: props.theme.colors.subtitle,
-          }}
-        >
-          Connected: {numWorkers}
-        </Text>
-      </View>
-
-      <Text
+    <>
+      <View
         style={{
-          fontSize: 12,
-          color: props.theme.colors.subtitle,
-          textAlign: "center",
-          marginBottom: 5,
+          ...styles(props.theme).workersContainer,
+          backgroundColor: props.theme.colors.background,
         }}
       >
-        {loadText}
-      </Text>
-
-      {initialState && (
-        <View>
-          <InitialStateCard index={1} theme={props.theme} />
-          <InitialStateCard index={2} theme={props.theme} />
-          <InitialStateCard index={3} theme={props.theme} />
+        <View style={styles(props.theme).containerHeader}>
+          <Text
+            style={{
+              ...styles(props.theme).headerText,
+              color: props.theme.colors.title,
+            }}
+          >
+            WORKERS
+          </Text>
+          <Text
+            style={{
+              ...styles(props.theme).headerSubtext,
+              color: props.theme.colors.subtitle,
+            }}
+          >
+            Connected: {numWorkers}
+          </Text>
         </View>
-      )}
 
-      {!initialState && (
-        <ScrollView
-          style={styles(props.theme).workersList}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-          }
+        <Text
+          style={{
+            fontSize: 12,
+            color: props.theme.colors.subtitle,
+            textAlign: "center",
+            marginBottom: 5,
+          }}
         >
-          <View>{comp}</View>
-        </ScrollView>
-      )}
+          {loadText}
+        </Text>
 
-      <WorkersModal
-        obj={modalObj}
-        visible={modalVisible}
-        theme={props.theme}
-        onClearModal={clearModal}
-      />
-    </View>
+        {initialState && (
+          <View>
+            <InitialStateCard index={1} theme={props.theme} />
+            <InitialStateCard index={2} theme={props.theme} />
+            <InitialStateCard index={3} theme={props.theme} />
+          </View>
+        )}
+
+        {!initialState && (
+          <ScrollView
+            style={styles(props.theme).workersList}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }
+          >
+            <View>{comp}</View>
+          </ScrollView>
+        )}
+      </View>
+      <BottomSheet
+        ref={(ref) => (panelRef.current = ref)}
+        sliderMinHeight={0}
+        sliderMaxHeight={Dimensions.get("window").height * 0.9}
+        isOpen={false}
+        outerContentStyle={{
+          backgroundColor: props.theme.colors.modalBg,
+          paddingHorizontal: 0,
+        }}
+        innerContentStyle={{ backgroundColor: props.theme.colors.modalBg }}
+        lineContainerStyle={{ backgroundColor: props.theme.colors.modalBg }}
+        wrapperStyle={{ backgroundColor: props.theme.colors.modalBg }}
+      >
+        <WorkersModal
+          obj={modalObj}
+          theme={props.theme}
+          onClearModal={clearModal}
+        />
+      </BottomSheet>
+    </>
   );
 }
 
