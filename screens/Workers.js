@@ -17,6 +17,8 @@ import BottomSheet from "react-native-simple-bottom-sheet";
 export default function WorkersScreen(props) {
   const [loadText, setLoadText] = useState("");
 
+  let running = false;
+
   const [comp, setComp] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
   const [initialState, setInitialState] = useState(true);
@@ -34,6 +36,7 @@ export default function WorkersScreen(props) {
   }, []);
 
   const call_endpoint = async (api_key) => {
+    running = true;
     if (!api_key || api_key == undefined) {
       setComp(
         <ErrorView
@@ -47,7 +50,8 @@ export default function WorkersScreen(props) {
     }
 
     try {
-      setLoadText("...getting worker data...");
+      // setLoadText("...getting worker data...");
+      setLoadText("...refreshing...");
       const req = await fetch(
         `https://prohashing.com/api/v1/walletEx?apiKey=${api_key}`
       );
@@ -123,7 +127,18 @@ export default function WorkersScreen(props) {
               color: props.theme.colors.text,
             }}
           >
-            No active workers.
+            No active workers found.
+          </Text>
+          <Text
+            style={{
+              paddingHorizontal: 20,
+              paddingTop: 30,
+              fontWeight: "700",
+              fontSize: 18,
+              color: props.theme.colors.text,
+            }}
+          >
+            TROUBLESHOOTING:
           </Text>
           <Text
             style={{
@@ -133,13 +148,25 @@ export default function WorkersScreen(props) {
               color: props.theme.colors.text,
             }}
           >
-            Make sure you have entered a valid Prohashing API key in the
-            Settings tab and that your miner(s) are connected and running.
+            1) Make sure you have entered a valid Prohashing API key in the
+            Settings tab.
+          </Text>
+          <Text
+            style={{
+              paddingHorizontal: 20,
+              paddingTop: 20,
+              fontWeight: "700",
+              color: props.theme.colors.text,
+            }}
+          >
+            2) Make sure that your miner(s) are running and connected to a valid
+            Prohashing mining pool.
           </Text>
         </View>
       );
     }
 
+    running = false;
     return miners.map((item, index) => (
       <WorkersCard
         key={index}
@@ -179,15 +206,19 @@ export default function WorkersScreen(props) {
   };
 
   async function run() {
-    setRefreshing(true);
     await call_endpoint(props.apiKey);
-    setRefreshing(false);
     setLoadText("");
   }
 
   useEffect(() => {
     run();
-  }, [props.apiKey]);
+    const interval = setInterval(() => {
+      if (!running) {
+        run();
+      }
+    }, 15000);
+    return () => clearInterval(interval);
+  }, [props.apiKey, props.theme]);
 
   return (
     <>

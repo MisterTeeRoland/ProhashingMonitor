@@ -63,7 +63,7 @@ const styles = (theme) =>
       marginTop: 10,
       borderRadius: 15,
       shadowColor: "#000",
-      elevation: 10,
+      // elevation: 10,
       display: "flex",
       flexDirection: "row",
       flex: 1,

@@ -12,12 +12,16 @@ import {
   Image,
 } from "react-native";
 
+// import Animated from "react-native-reanimated";
+// import BottomSheet from "reanimated-bottom-sheet";
+import BottomSheet from "react-native-bottomsheet-reanimated";
+
 import { coinList } from "../assets/coinlist";
 import { load_keys, get_balances, get_values } from "../tools/fetches";
 import InitialStateCard from "../components/InitialStateCard";
 import EarningsCard from "../components/EarningsCard";
 import EarningsModal from "../components/EarningsModal";
-import BottomSheet from "react-native-simple-bottom-sheet";
+// import BottomSheet from "react-native-simple-bottom-sheet";
 import ErrorView from "../components/ErrorView";
 
 export default function EarningsScreen(props) {
@@ -60,7 +64,8 @@ export default function EarningsScreen(props) {
       return;
     }
 
-    setLoadText("...getting account data...");
+    // setLoadText("...getting account data...");
+    setLoadText("...refreshing...");
     const result = await get_balances(api_key);
     if (result.status === "success") {
       setComp(await renderBalances(result.data.balances, currency, threshold));
@@ -94,7 +99,8 @@ export default function EarningsScreen(props) {
       rate: item[1].rate,
     });
 
-    panelRef.current.togglePanel();
+    // panelRef.current.togglePanel();
+    panelRef.current.snapTo(0);
   };
 
   const clearEarningsModal = () => {
@@ -109,11 +115,13 @@ export default function EarningsScreen(props) {
       earnings: 0.0,
     });
 
-    panelRef.current.togglePanel();
+    // panelRef.current.togglePanel();
+    panelRef.current.snapTo(0);
   };
 
   const renderBalances = async (balances, currency, threshold) => {
-    setLoadText("...getting coin balances...");
+    // setLoadText("...getting coin balances...");
+    setLoadText("...refreshing...");
 
     if (Object.entries(balances).length == 0) {
       return (
@@ -225,13 +233,21 @@ export default function EarningsScreen(props) {
 
   useEffect(() => {
     run();
-    // const interval = setInterval(() => {
-    //   if (!running) {
-    //     run();
-    //   }
-    // }, 15000);
-    // return () => clearInterval(interval);
-  }, [props.apiKey, props.threshold, props.currency]);
+    const interval = setInterval(() => {
+      if (!running) {
+        run();
+      }
+    }, 15000);
+    return () => clearInterval(interval);
+  }, [props.apiKey, props.threshold, props.currency, props.theme]);
+
+  const renderContent = () => (
+    <EarningsModal
+      obj={modalObj}
+      onClearModal={clearEarningsModal}
+      theme={props.theme}
+    />
+  );
 
   return (
     <>
@@ -256,35 +272,45 @@ export default function EarningsScreen(props) {
 
         {!initialState && (
           <ScrollView
-            style={styles(props.theme).earningsList}
+            contentContainerStyle={styles(props.theme).earningsList}
             refreshControl={
               <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
             }
           >
-            <View>{comp}</View>
+            <View
+              style={
+                {
+                  // flex: 1
+                }
+              }
+            >
+              {comp}
+            </View>
           </ScrollView>
         )}
       </View>
 
       <BottomSheet
-        ref={(ref) => (panelRef.current = ref)}
-        sliderMinHeight={0}
-        sliderMaxHeight={Dimensions.get("window").height * 0.9}
-        isOpen={false}
-        outerContentStyle={{
-          backgroundColor: props.theme.colors.modalBg,
-          paddingHorizontal: 0,
-        }}
-        innerContentStyle={{ backgroundColor: props.theme.colors.modalBg }}
-        lineContainerStyle={{ backgroundColor: props.theme.colors.modalBg }}
-        wrapperStyle={{ backgroundColor: props.theme.colors.modalBg }}
-      >
-        <EarningsModal
-          obj={modalObj}
-          onClearModal={clearEarningsModal}
-          theme={props.theme}
-        />
-      </BottomSheet>
+        // ref={(ref) => (panelRef.current = ref)}
+        // sliderMinHeight={0}
+        // sliderMaxHeight={Dimensions.get("window").height * 0.9}
+        // isOpen={false}
+        // outerContentStyle={{
+        //   backgroundColor: props.theme.colors.modalBg,
+        //   paddingHorizontal: 0,
+        // }}
+        // innerContentStyle={{ backgroundColor: props.theme.colors.modalBg }}
+        // lineContainerStyle={{ backgroundColor: props.theme.colors.modalBg }}
+        // wrapperStyle={{ backgroundColor: props.theme.colors.modalBg }}
+        bottomSheerColor="#FFFFFF"
+        ref="BottomSheet"
+        initialPosition={"50%"} //200, 300
+        snapPoints={["50%", "100%"]}
+        isBackDrop={true}
+        isBackDropDismissByPress={true}
+        isRoundBorderWithTipHeader={true}
+        body={renderContent}
+      />
     </>
   );
 }
@@ -319,7 +345,9 @@ const styles = (theme) =>
       textAlign: "center",
       marginBottom: 5,
     },
-    earningsList: {},
+    earningsList: {
+      // flex: 1,
+    },
     errorText: {
       color: "red",
       fontWeight: "700",

@@ -224,12 +224,16 @@ const styles = (theme) =>
     bottomModal: {},
     modalBody: {
       borderRadius: 4,
+      borderBottomLeftRadius: 0,
+      borderBottomRightRadius: 0,
       borderColor: "rgba(0, 0, 0, 0.1)",
       width: "100%",
-      borderRadius: 15,
       display: "flex",
       flexDirection: "column",
       justifyContent: "space-between",
+      paddingHorizontal: 20,
+      paddingTop: 20,
+      height: "100%",
     },
     modalImage: {
       width: 60,
