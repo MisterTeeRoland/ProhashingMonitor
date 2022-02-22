@@ -12,16 +12,12 @@ import {
   Image,
 } from "react-native";
 
-// import Animated from "react-native-reanimated";
-// import BottomSheet from "reanimated-bottom-sheet";
-import BottomSheet from "react-native-bottomsheet-reanimated";
-
 import { coinList } from "../assets/coinlist";
 import { load_keys, get_balances, get_values } from "../tools/fetches";
 import InitialStateCard from "../components/InitialStateCard";
 import EarningsCard from "../components/EarningsCard";
 import EarningsModal from "../components/EarningsModal";
-// import BottomSheet from "react-native-simple-bottom-sheet";
+import BottomSheet from "react-native-bottomsheet-reanimated";
 import ErrorView from "../components/ErrorView";
 
 export default function EarningsScreen(props) {
@@ -99,8 +95,7 @@ export default function EarningsScreen(props) {
       rate: item[1].rate,
     });
 
-    // panelRef.current.togglePanel();
-    panelRef.current.snapTo(0);
+    panelRef.current.snapTo(1);
   };
 
   const clearEarningsModal = () => {
@@ -115,7 +110,6 @@ export default function EarningsScreen(props) {
       earnings: 0.0,
     });
 
-    // panelRef.current.togglePanel();
     panelRef.current.snapTo(0);
   };
 
@@ -241,14 +235,6 @@ export default function EarningsScreen(props) {
     return () => clearInterval(interval);
   }, [props.apiKey, props.threshold, props.currency, props.theme]);
 
-  const renderContent = () => (
-    <EarningsModal
-      obj={modalObj}
-      onClearModal={clearEarningsModal}
-      theme={props.theme}
-    />
-  );
-
   return (
     <>
       <View style={styles(props.theme).earningsContainer}>
@@ -291,25 +277,27 @@ export default function EarningsScreen(props) {
       </View>
 
       <BottomSheet
-        // ref={(ref) => (panelRef.current = ref)}
-        // sliderMinHeight={0}
-        // sliderMaxHeight={Dimensions.get("window").height * 0.9}
-        // isOpen={false}
-        // outerContentStyle={{
-        //   backgroundColor: props.theme.colors.modalBg,
-        //   paddingHorizontal: 0,
-        // }}
-        // innerContentStyle={{ backgroundColor: props.theme.colors.modalBg }}
-        // lineContainerStyle={{ backgroundColor: props.theme.colors.modalBg }}
-        // wrapperStyle={{ backgroundColor: props.theme.colors.modalBg }}
+        keyboardAware
         bottomSheerColor="#FFFFFF"
-        ref="BottomSheet"
-        initialPosition={"50%"} //200, 300
-        snapPoints={["50%", "100%"]}
+        ref={(ref) => (panelRef.current = ref)}
+        initialPosition={"0%"}
+        snapPoints={["0%", "60%", "100%"]}
         isBackDrop={true}
         isBackDropDismissByPress={true}
         isRoundBorderWithTipHeader={true}
-        body={renderContent}
+        containerStyle={{
+          backgroundColor: props.theme.colors.modalBg,
+        }}
+        tipStyle={{
+          backgroundColor: props.theme.colors.text,
+        }}
+        body={
+          <EarningsModal
+            obj={modalObj}
+            onClearModal={clearEarningsModal}
+            theme={props.theme}
+          />
+        }
       />
     </>
   );

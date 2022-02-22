@@ -12,7 +12,7 @@ import InitialStateCard from "../components/InitialStateCard";
 import WorkersCard from "../components/WorkersCard";
 import WorkersModal from "../components/WorkersModal";
 import ErrorView from "../components/ErrorView";
-import BottomSheet from "react-native-simple-bottom-sheet";
+import BottomSheet from "react-native-bottomsheet-reanimated";
 
 export default function WorkersScreen(props) {
   const [loadText, setLoadText] = useState("");
@@ -188,7 +188,7 @@ export default function WorkersScreen(props) {
       workRestartPenalty: item.workRestartPenalty,
     });
 
-    panelRef.current.togglePanel();
+    panelRef.current.snapTo(1);
   };
 
   const clearModal = () => {
@@ -202,7 +202,7 @@ export default function WorkersScreen(props) {
       workRestartPenalty: 0,
     });
 
-    panelRef.current.togglePanel();
+    panelRef.current.snapTo(0);
   };
 
   async function run() {
@@ -277,25 +277,30 @@ export default function WorkersScreen(props) {
           </ScrollView>
         )}
       </View>
+
       <BottomSheet
+        keyboardAware
+        bottomSheerColor="#FFFFFF"
         ref={(ref) => (panelRef.current = ref)}
-        sliderMinHeight={0}
-        sliderMaxHeight={Dimensions.get("window").height * 0.9}
-        isOpen={false}
-        outerContentStyle={{
+        initialPosition={"0%"}
+        snapPoints={["0%", "70%", "100%"]}
+        isBackDrop={true}
+        isBackDropDismissByPress={true}
+        isRoundBorderWithTipHeader={true}
+        containerStyle={{
           backgroundColor: props.theme.colors.modalBg,
-          paddingHorizontal: 0,
         }}
-        innerContentStyle={{ backgroundColor: props.theme.colors.modalBg }}
-        lineContainerStyle={{ backgroundColor: props.theme.colors.modalBg }}
-        wrapperStyle={{ backgroundColor: props.theme.colors.modalBg }}
-      >
-        <WorkersModal
-          obj={modalObj}
-          theme={props.theme}
-          onClearModal={clearModal}
-        />
-      </BottomSheet>
+        tipStyle={{
+          backgroundColor: props.theme.colors.text,
+        }}
+        body={
+          <WorkersModal
+            obj={modalObj}
+            theme={props.theme}
+            onClearModal={clearModal}
+          />
+        }
+      />
     </>
   );
 }

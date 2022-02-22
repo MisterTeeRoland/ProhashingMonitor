@@ -168,6 +168,7 @@ const styles = (theme) =>
       display: "flex",
       flexDirection: "column",
       justifyContent: "space-between",
+      paddingHorizontal: 20,
     },
     modalImage: {
       width: 60,

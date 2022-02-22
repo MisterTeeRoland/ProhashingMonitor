@@ -232,7 +232,7 @@ const styles = (theme) =>
       flexDirection: "column",
       justifyContent: "space-between",
       paddingHorizontal: 20,
-      paddingTop: 20,
+      paddingTop: 10,
       height: "100%",
     },
     modalImage: {
