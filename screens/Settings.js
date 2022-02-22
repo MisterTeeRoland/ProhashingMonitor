@@ -223,6 +223,7 @@ export default function SettingsScreen(props) {
               style={styles(props.theme).settingsInput}
               onChangeText={(text) => updateKey(text)}
               value={api_key}
+              secureTextEntry={true}
             />
           </View>
 
